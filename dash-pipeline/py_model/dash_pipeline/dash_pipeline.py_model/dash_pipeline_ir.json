@@ -1,0 +1,2034 @@
+{
+  "Node_ID": 1000000,
+  "Node_Type": "PyProgram",
+  "objects": {
+    "Node_ID": 1000001,
+    "Node_Type": "Vector<Node>",
+    "vec": [
+      {
+        "Node_ID": 1000002,
+        "Node_Type": "Declaration_Instance",
+        "name": "vip_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2000,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2001,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/pre_pipeline.py",
+          "line": 123,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\"] counter(1, CounterType.packets) vip_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000003,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2002,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2003,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/eni_lookup.py",
+          "line": 34,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\"] counter(1, CounterType.packets) eni_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000004,
+        "Node_Type": "Declaration_Instance",
+        "name": "port_lb_fast_path_icmp_in",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2004,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2005,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/pre_pipeline.py",
+          "line": 115,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\"] counter(1, CounterType.packets_and_bytes) port_lb_fast_path_icmp_in;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000005,
+        "Node_Type": "Declaration_Instance",
+        "name": "port_lb_fast_path_eni_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2006,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2007,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/eni_lookup.py",
+          "line": 36,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\"] counter(1, CounterType.packets_and_bytes) port_lb_fast_path_eni_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000006,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2008,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2009,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 181,
+          "source_fragment": "@SaiCounter[name=\\\"rx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000007,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2010,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2011,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 305,
+          "source_fragment": "@SaiCounter[name=\\\"tx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000008,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_outbound_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2012,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2013,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 184,
+          "source_fragment": "@SaiCounter[name=\\\"outbound_rx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_outbound_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000009,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_outbound_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2014,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2015,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 307,
+          "source_fragment": "@SaiCounter[name=\\\"outbound_tx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_outbound_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000010,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_inbound_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2016,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2017,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 186,
+          "source_fragment": "@SaiCounter[name=\\\"inbound_rx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_inbound_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000011,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_inbound_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2018,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2019,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 309,
+          "source_fragment": "@SaiCounter[name=\\\"inbound_tx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_inbound_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000012,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_lb_fast_path_icmp_in",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2020,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2021,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_pipeline.py",
+          "line": 189,
+          "source_fragment": "@SaiCounter[name=\\\"lb_fast_path_icmp_in\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) eni_lb_fast_path_icmp_in;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000013,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_created",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2022,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2023,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/conntrack_lookup.py",
+          "line": 144,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_created;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000014,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_create_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2024,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2025,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 21,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_create_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000015,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_updated",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2026,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2027,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 22,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_updated;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000016,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_update_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2028,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2029,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 23,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_update_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000017,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_updated_by_resimulation",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2030,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2031,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 24,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_updated_by_resimulation;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000018,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_update_by_resimulation_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2032,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2033,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 25,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_update_by_resimulation_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000019,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_deleted",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2034,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2035,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 26,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_deleted;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000020,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_delete_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2036,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2037,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 27,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_delete_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000021,
+        "Node_Type": "Declaration_Instance",
+        "name": "flow_aged",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2038,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2039,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 28,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) flow_aged;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000022,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_sync_packet_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2040,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2041,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 31,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) inline_sync_packet_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000023,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_sync_packet_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2042,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2043,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 32,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) inline_sync_packet_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000024,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_sync_packet_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2044,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2045,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 33,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) timed_sync_packet_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000025,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_sync_packet_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2046,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2047,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/dash_counters.py",
+          "line": 34,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets_and_bytes) timed_sync_packet_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000026,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_req_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2048,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2049,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_req_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000027,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_req_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2050,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2051,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_req_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000028,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_req_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2052,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2053,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_req_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000029,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_req_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2054,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2055,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_req_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000030,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_ack_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2056,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2057,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_ack_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000031,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_ack_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2058,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2059,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_ack_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000032,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_create_ack_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2060,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2061,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_create_ack_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000033,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_req_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2062,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2063,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_req_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000034,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_req_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2064,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2065,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_req_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000035,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_req_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2066,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2067,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_req_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000036,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_req_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2068,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2069,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_req_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000037,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_ack_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2070,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2071,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_ack_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000038,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_ack_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2072,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2073,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_ack_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000039,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_create_ack_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2074,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2075,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_create_ack_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000040,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_req_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2076,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2077,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_req_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000041,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_req_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2078,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2079,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_req_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000042,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_req_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2080,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2081,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_req_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000043,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_req_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2082,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2083,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_req_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000044,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_ack_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2084,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2085,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_ack_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000045,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_ack_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2086,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2087,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_ack_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000046,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_update_ack_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2088,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2089,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_update_ack_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000047,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_req_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2090,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2091,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_req_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000048,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_req_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2092,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2093,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_req_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000049,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_req_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2094,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2095,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_req_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000050,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_req_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2096,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2097,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_req_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000051,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_ack_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2098,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2099,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_ack_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000052,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_ack_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2100,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2101,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_ack_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000053,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_update_ack_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2102,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2103,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_update_ack_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000054,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_req_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2104,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2105,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_req_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000055,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_req_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2106,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2107,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_req_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000056,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_req_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2108,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2109,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_req_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000057,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_req_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2110,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2111,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_req_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000058,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_ack_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2112,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2113,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_ack_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000059,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_ack_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2114,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2115,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_ack_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000060,
+        "Node_Type": "Declaration_Instance",
+        "name": "inline_flow_delete_ack_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2116,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2117,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inline_flow_delete_ack_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000061,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_req_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2118,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2119,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_req_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000062,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_req_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2120,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2121,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_req_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000063,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_req_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2122,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2123,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_req_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000064,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_req_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2124,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2125,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_req_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000065,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_ack_recv",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2126,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2127,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_ack_recv;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000066,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_ack_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2128,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2129,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_ack_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000067,
+        "Node_Type": "Declaration_Instance",
+        "name": "timed_flow_delete_ack_ignored",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2130,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2131,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": null,
+          "line": null,
+          "source_fragment": "@SaiCounter[no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) timed_flow_delete_ack_ignored;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000068,
+        "Node_Type": "Declaration_Instance",
+        "name": "outbound_routing_entry_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2132,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2133,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/outbound_routing.py",
+          "line": 73,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) outbound_routing_entry_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000069,
+        "Node_Type": "Declaration_Instance",
+        "name": "outbound_ca_pa_entry_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2134,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2135,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/outbound_mapping.py",
+          "line": 56,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) outbound_ca_pa_entry_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000070,
+        "Node_Type": "Declaration_Instance",
+        "name": "inbound_routing_entry_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2136,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2137,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/inbound_routing.py",
+          "line": 77,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) inbound_routing_entry_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000071,
+        "Node_Type": "Declaration_Instance",
+        "name": "outbound_routing_group_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2138,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2139,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/outbound_routing.py",
+          "line": 62,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) outbound_routing_group_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000072,
+        "Node_Type": "Declaration_Instance",
+        "name": "outbound_routing_group_disabled_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2140,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2141,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/outbound_routing.py",
+          "line": 67,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) outbound_routing_group_disabled_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000073,
+        "Node_Type": "Declaration_Instance",
+        "name": "outbound_port_map_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2142,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2143,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/outbound_port_map.py",
+          "line": 81,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) outbound_port_map_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000074,
+        "Node_Type": "Declaration_Instance",
+        "name": "outbound_port_map_port_range_entry_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2144,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2145,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/outbound_port_map.py",
+          "line": 86,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) outbound_port_map_port_range_entry_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000075,
+        "Node_Type": "Declaration_Instance",
+        "name": "eni_trusted_vni_entry_miss_drop",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2146,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2147,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/trusted_vni.py",
+          "line": 45,
+          "source_fragment": "@SaiCounter[attr_type=\\\"stats\\\", action_names=\\\"set_eni_attrs\\\"] counter(64, CounterType.packets) eni_trusted_vni_entry_miss_drop;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000076,
+        "Node_Type": "Declaration_Instance",
+        "name": "dp_probe_req_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2148,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2149,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 26,
+          "source_fragment": "@SaiCounter[name=\\\"dp_probe_req_rx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets_and_bytes) dp_probe_req_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000077,
+        "Node_Type": "Declaration_Instance",
+        "name": "dp_probe_req_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2150,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2151,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 27,
+          "source_fragment": "@SaiCounter[name=\\\"dp_probe_req_tx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets_and_bytes) dp_probe_req_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000078,
+        "Node_Type": "Declaration_Instance",
+        "name": "dp_probe_ack_rx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2152,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2153,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 28,
+          "source_fragment": "@SaiCounter[name=\\\"dp_probe_ack_rx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets_and_bytes) dp_probe_ack_rx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000079,
+        "Node_Type": "Declaration_Instance",
+        "name": "dp_probe_ack_tx",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2154,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2155,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 29,
+          "source_fragment": "@SaiCounter[name=\\\"dp_probe_ack_tx\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets_and_bytes) dp_probe_ack_tx;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000080,
+        "Node_Type": "Declaration_Instance",
+        "name": "dp_probe_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2156,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2157,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 30,
+          "source_fragment": "@SaiCounter[name=\\\"dp_probe_failed\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) dp_probe_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000081,
+        "Node_Type": "Declaration_Instance",
+        "name": "cp_data_channel_connect_attempted",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2158,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2159,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 33,
+          "source_fragment": "@SaiCounter[name=\\\"cp_data_channel_connect_attempted\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) cp_data_channel_connect_attempted;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000082,
+        "Node_Type": "Declaration_Instance",
+        "name": "cp_data_channel_connect_received",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2160,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2161,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 34,
+          "source_fragment": "@SaiCounter[name=\\\"cp_data_channel_connect_received\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) cp_data_channel_connect_received;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000083,
+        "Node_Type": "Declaration_Instance",
+        "name": "cp_data_channel_connect_succeeded",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2162,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2163,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 35,
+          "source_fragment": "@SaiCounter[name=\\\"cp_data_channel_connect_succeeded\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) cp_data_channel_connect_succeeded;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000084,
+        "Node_Type": "Declaration_Instance",
+        "name": "cp_data_channel_connect_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2164,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2165,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 36,
+          "source_fragment": "@SaiCounter[name=\\\"cp_data_channel_connect_failed\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) cp_data_channel_connect_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000085,
+        "Node_Type": "Declaration_Instance",
+        "name": "cp_data_channel_connect_rejected",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2166,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2167,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 37,
+          "source_fragment": "@SaiCounter[name=\\\"cp_data_channel_connect_rejected\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) cp_data_channel_connect_rejected;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000086,
+        "Node_Type": "Declaration_Instance",
+        "name": "cp_data_channel_timeout_count",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2168,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2169,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 38,
+          "source_fragment": "@SaiCounter[name=\\\"cp_data_channel_timeout_count\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) cp_data_channel_timeout_count;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000087,
+        "Node_Type": "Declaration_Instance",
+        "name": "bulk_sync_message_received",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2170,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2171,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 41,
+          "source_fragment": "@SaiCounter[name=\\\"bulk_sync_message_received\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) bulk_sync_message_received;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000088,
+        "Node_Type": "Declaration_Instance",
+        "name": "bulk_sync_message_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2172,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2173,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 42,
+          "source_fragment": "@SaiCounter[name=\\\"bulk_sync_message_sent\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) bulk_sync_message_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000089,
+        "Node_Type": "Declaration_Instance",
+        "name": "bulk_sync_message_send_failed",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2174,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2175,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 43,
+          "source_fragment": "@SaiCounter[name=\\\"bulk_sync_message_send_failed\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) bulk_sync_message_send_failed;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000090,
+        "Node_Type": "Declaration_Instance",
+        "name": "bulk_sync_flow_received",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2176,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2177,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 44,
+          "source_fragment": "@SaiCounter[name=\\\"bulk_sync_flow_received\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) bulk_sync_flow_received;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000091,
+        "Node_Type": "Declaration_Instance",
+        "name": "bulk_sync_flow_sent",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2178,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2179,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/ha.py",
+          "line": 45,
+          "source_fragment": "@SaiCounter[name=\\\"bulk_sync_flow_sent\\\", no_suffix=\\\"true\\\", attr_type=\\\"stats\\\", action_names=\\\"set_ha_set_attr\\\"] counter(1, CounterType.packets) bulk_sync_flow_sent;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000092,
+        "Node_Type": "Declaration_Instance",
+        "name": "meter_bucket_outbound",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2180,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2181,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/metering_update.py",
+          "line": 23,
+          "source_fragment": "@SaiCounter[name=\\\"outbound\\\", attr_type=\\\"stats\\\", action_names=\\\"update_meter_bucket\\\"] counter(262144, CounterType.bytes) meter_bucket_outbound;, Type = counter"
+        }
+      },
+      {
+        "Node_ID": 1000093,
+        "Node_Type": "Declaration_Instance",
+        "name": "meter_bucket_inbound",
+        "annotations": {},
+        "type": {
+          "Node_ID": 2182,
+          "Node_Type": "Type_Name",
+          "path": {
+            "Node_ID": 2183,
+            "Node_Type": "Path",
+            "name": "counter"
+          }
+        },
+        "arguments": {},
+        "properties": {},
+        "Source_Info": {
+          "filename": "pmv2/stages/metering_update.py",
+          "line": 24,
+          "source_fragment": "@SaiCounter[name=\\\"inbound\\\", attr_type=\\\"stats\\\", action_names=\\\"update_meter_bucket\\\"] counter(262144, CounterType.bytes) meter_bucket_inbound;, Type = counter"
+        }
+      }
+    ]
+  }
+}

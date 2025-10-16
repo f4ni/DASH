@@ -82,6 +82,7 @@ DOCKER_FLAGS ?=-it
 DOCKER_RUN := docker run \
 	-v $(PWD)/bmv2:/bmv2 \
 	-v $(PWD)/SAI:/SAI \
+	-v $(PWD)/py_model:/py_model \
 	-v $(PWD)/tests:/tests \
 	--network=host \
 	--rm \
@@ -181,6 +182,7 @@ DOCKER_RUN_SAITHRIFT_BLDR =\
 	-e HOST_GROUP=$(HOST_GROUP) \
 	$(DOCKER_SAITHRIFT_BLDR_IMG) \
 
+TARGET_TYPE ?= bmv2
 # TODO - create separate rules for headers, libsai.so
 .PHONY:sai
 sai: sai-headers sai-meta libsai
@@ -199,7 +201,7 @@ sai-headers: p4 docker-saithrift-bldr-image-exists | SAI/SAI
 		--name build_sai-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
 		-w /SAI $(DOCKER_SAITHRIFT_BLDR_IMG) \
-		make
+		make TARGET_TYPE=$(TARGET_TYPE)
 
 sai-meta:
 	@echo "Generate SAI metadata..."
