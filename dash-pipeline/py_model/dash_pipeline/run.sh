@@ -28,7 +28,7 @@ case "$1" in
         echo ""
         cd ../../DASH/dash-pipeline || exit 1
         make network HAVE_DPAPP=y
-        cd ../../dash_py_model/dash_pipeline || exit 1
+        cd py_model/dash_pipeline || exit 1
         python3 main_py_dash.py "veth0" "veth2" "veth4" "veth5"
         ;;
     bmv2)

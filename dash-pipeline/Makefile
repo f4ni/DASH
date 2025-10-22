@@ -109,6 +109,17 @@ P4_MAIN=bmv2/dash_pipeline.p4
 P4_OUTDIR=bmv2/dash_pipeline.bmv2
 P4_ARTIFACTS=$(P4_OUTDIR)/dash_pipeline.json $(P4_OUTDIR)/dash_pipeline_p4rt.txt
 
+PY_DIR=py_model/dash_pipeline
+PY_OUTDIR=py_model/dash_pipeline/dash_pipeline.py_model
+PY_ARTIFACTS=$(PY_OUTDIR)/dash_pipeline_p4rt.txt $(PY_OUTDIR)/dash_pipeline_p4rt.json
+
+
+.PHONY: pymodel
+pymodel:
+	@echo ">>> Running pymodel..."
+	make network HAVE_DPAPP=y
+	cd $(PY_DIR) && python3 main_py_dash.py "veth0" "veth2" "veth4" "veth5"
+	
 p4: $(P4_ARTIFACTS)
 
 .PHONY:p4-clean
@@ -270,8 +281,7 @@ run-saithrift-bldr-bash:
 DOCKER_RUN_DPAPP = docker run\
 	$(DOCKER_FLAGS) \
 	-v $(PWD)/bmv2:/bmv2 \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
+	$(PIPELINE_MOUNTS) \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/tests:/tests \
 	-v $(PWD)/../:/dash \
@@ -343,14 +353,22 @@ saithrift-server: docker-saithrift-bldr-image-exists
 	$(DOCKER_RUN_SAITHRIFT_BLDR) \
 	    make $@
 
+ifeq ($(TARGET_TYPE), py_model)
+PIPELINE_MOUNTS = \
+	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
+else
+PIPELINE_MOUNTS = \
+	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
+endif
+
 DOCKER_RUN_SAITHRIFT_SRVR =\
 	docker run \
 	--rm \
 	$(DOCKER_FLAGS) \
 	--net=host \
 	--name dash-saithrift-server-$(USER) \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
+	$(PIPELINE_MOUNTS) \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/SAI/SAI/meta:/meta \
 	-w /SAI/rpc/usr/sbin \

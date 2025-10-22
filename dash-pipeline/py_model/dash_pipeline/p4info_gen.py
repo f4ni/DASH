@@ -704,14 +704,14 @@ if __name__ == "__main__":
 
     # Dump to Protobuf text-format string
     textproto_output = dict_to_textproto(pyinfo)
-    with open(os.path.join(output_dir, "py_p4rt.txt"), "w") as f:
+    with open(os.path.join(output_dir, "dash_pipeline_p4rt.txt"), "w") as f:
         f.write(textproto_output + "\n")
 
     # Dump to Protobuf json-format string
-    with open(os.path.join(output_dir, "py_p4rt.json"), "w") as f:
+    with open(os.path.join(output_dir, "dash_pipeline_p4rt.json"), "w") as f:
         json.dump(pyinfo, f, indent=2, sort_keys=False, cls=SafeEncoder)
 
     # Generate IR and save as JSON
     ir = make_ir()
-    with open(os.path.join(output_dir, "py_ir.json"), "w") as f:
+    with open(os.path.join(output_dir, "dash_pipeline_ir.json"), "w") as f:
         json.dump(ir, f, indent=2, sort_keys=False)
