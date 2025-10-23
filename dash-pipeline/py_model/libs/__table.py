@@ -212,10 +212,10 @@ class Table:
     def delete(self, entry):
         for e in self.entries:
             if e.values == entry.values:
-                print("Entry found for deleting +++")
+                # print("Entry found for deleting +++")
                 self.entries.remove(e)
                 return
-        print("Entry NOT found ---\n\n")
+        # print("Entry NOT found ---\n\n")
 
     def apply(self):
         entry = self.__lookup()
@@ -242,7 +242,7 @@ class Table:
 
         for k in self.key:
             if idx < len(entry.values):
-                print(f"-> Match Key: {k}")
+                # print(f"-> Match Key: {k}")
                 _read_value_res = _read_value(k)
                 match_value = _read_value_res[0]
                 width = _read_value_res[1]
@@ -289,15 +289,15 @@ class Table:
 
     def __get_all_matching_entries(self):
         matching_entries = []
-        print(f"Match_Entries = {list(self.entries)}")
+        # print(f"Match_Entries = {list(self.entries)}")
         for e in self.entries:
-            print(f"matching entry = {e}")
+            # print(f"matching entry = {e}")
             if self.__match_entry(e):
                 matching_entries.append(e)
         return matching_entries
 
     def __get_winning_criteria(self):
-        print(f"self.key = {self.key}")
+        # print(f"self.key = {self.key}")
         for k in self.key:
             if self.key[k]==LPM:
                 return _winning_criteria_PREFIX_LEN
@@ -307,7 +307,7 @@ class Table:
         return None
 
     def __select_winning_entry(self, matching_entries):
-        print(f"matching_entries = {list(matching_entries)}")
+        # print(f"matching_entries = {list(matching_entries)}")
         winning_criteria = self.__get_winning_criteria()
         curr_winner = matching_entries[0]
         for e in matching_entries[1:]:

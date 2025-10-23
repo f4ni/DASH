@@ -127,7 +127,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
         match_type = key_format[idx]
 
         if match_type is EXACT:
-            print(f"EXACT | value: {val.exact}")
+            # print(f"EXACT | value: {val.exact}")
             entry.values.append(val.exact)
 
         elif match_type is TERNARY:
@@ -138,7 +138,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
             except Exception as e:
                 print(f"TERNARY conversion error: {e}")
                 continue
-            print(f"TERNARY | value: {hex(ternary.value)} | mask: {hex(ternary.mask)}")
+            # print(f"TERNARY | value: {hex(ternary.value)} | mask: {hex(ternary.mask)}")
             entry.values.append(ternary)
 
         elif match_type is LIST:
@@ -273,7 +273,7 @@ def parse_insert_request(json_obj):
     keys = list(table.key.keys())
     num_fields = len(keys)
 
-    print(f"Table {insertRequest.table} : {table_name} | keys: {keys}")
+    print(f"Table {insertRequest.table} : {table_name}")
 
     # Process match fields
     insertRequest.values = []

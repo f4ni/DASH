@@ -1,4 +1,12 @@
 
+#To run the BMv2 model, run:
+make network
+make run-switch
+
+#To run the BMv2 model with DPAPP support, run:
+make network HAVE_DPAPP=y
+make run-switch HAVE_DPAPP=y
+
 #To generate all the python model artifacts, run:
 make py-artifacts
 
@@ -18,10 +26,11 @@ sudo make sai TARGET_MODEL=pymodel
 sudo make sai
 
 #To clean SAI headers, run:
+sudo chown -R <username>:<username> .
 sudo make sai-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
 
 #To build SAI Server, run:
-sudo chown -R farhan:farhan .
+sudo chown -R <username>:<username> .
 sudo make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
 
 #To clean SAI Server, run:
@@ -41,3 +50,8 @@ make run-saithrift-server
 #To run PTF Tests, run:
 make docker-saithrift-client
 make run-saithrift-ptftests
+
+#To kill all consoles, run:
+make kill-all
+make kill-dpapp
+pkill -f main_dash.py

@@ -65,8 +65,6 @@ class acl:
             py_log("info", f"Lookup in '{direction}.acl.stage{stage_num}'")
             result = acl_table.apply()
             action = result.get("action_run")
-
-            print(f"------- ACL action: {action}\n")
             if action in (cls.deny, cls.permit):
                 return
 
