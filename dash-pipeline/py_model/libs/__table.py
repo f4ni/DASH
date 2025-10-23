@@ -1,7 +1,7 @@
 from inspect import *
 
-from libs.__vars import *
-from libs.__id_map import *
+from py_model.libs.__vars import *
+from py_model.libs.__id_map import *
 
 class Entry:
     class Ternary:

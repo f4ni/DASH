@@ -1,8 +1,8 @@
-from pmv1.dash_headers import *
-from pmv1.dash_metadata import *
-from libs.__standard_metadata import *
-from libs.__packet_in import *
-from libs.__packet_out import *
+from py_model.data_plane.dash_headers import *
+from py_model.data_plane.dash_metadata import *
+from py_model.libs.__standard_metadata import *
+from py_model.libs.__packet_in import *
+from py_model.libs.__packet_out import *
 
 hdr = headers_t()
 meta = metadata_t()

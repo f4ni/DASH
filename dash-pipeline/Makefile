@@ -1,5 +1,10 @@
 SHELL = /bin/bash
 
+TARGET_TYPE ?= bmv2
+
+IFACE0 = veth0
+IFACE1 = veth2
+
 HAVE_DPAPP ?=
 ifeq ($(HAVE_DPAPP),y)
 DPAPP_LINK = veth4
@@ -109,17 +114,25 @@ P4_MAIN=bmv2/dash_pipeline.p4
 P4_OUTDIR=bmv2/dash_pipeline.bmv2
 P4_ARTIFACTS=$(P4_OUTDIR)/dash_pipeline.json $(P4_OUTDIR)/dash_pipeline_p4rt.txt
 
-PY_DIR=py_model/dash_pipeline
-PY_OUTDIR=py_model/dash_pipeline/dash_pipeline.py_model
-PY_ARTIFACTS=$(PY_OUTDIR)/dash_pipeline_p4rt.txt $(PY_OUTDIR)/dash_pipeline_p4rt.json
+PY_DIR=py_model
+PY_OUTDIR=$(PY_DIR)/dash_pipeline.py_model
+PY_ARTIFACTS=$(PY_OUTDIR)/dash_pipeline_p4rt.json $(PY_OUTDIR)/dash_pipeline_p4rt.txt
 
+
+py-artifacts:
+	@echo "Generating artifacts for pymodel..."
+	python3 -m py_model.scripts.artifacts_gen
+
+py-artifacts-clean:
+	rm -rf $(PY_OUTDIR)
 
 .PHONY: pymodel
 pymodel:
-	@echo ">>> Running pymodel..."
-	make network HAVE_DPAPP=y
-	cd $(PY_DIR) && python3 main_py_dash.py "veth0" "veth2" "veth4" "veth5"
-	
+	@echo "Running pymodel..."
+	make network $(if $(filter y,$(HAVE_DPAPP)),HAVE_DPAPP=y)
+	python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
+
+
 p4: $(P4_ARTIFACTS)
 
 .PHONY:p4-clean
@@ -147,7 +160,6 @@ $(P4_OUTDIR)/dash_pipeline_p4rt.txt: $(P4_SRC)
         --toJSON $(P4_OUTDIR)/dash_pipeline_ir.json
 
 # DPDK - experimental/WIP
-
 P4_DPDK_OUTDIR=dpdk-pna/dash_pipeline.dpdk
 
 p4c-dpdk-pna:
@@ -193,7 +205,6 @@ DOCKER_RUN_SAITHRIFT_BLDR =\
 	-e HOST_GROUP=$(HOST_GROUP) \
 	$(DOCKER_SAITHRIFT_BLDR_IMG) \
 
-TARGET_TYPE ?= bmv2
 # TODO - create separate rules for headers, libsai.so
 .PHONY:sai
 sai: sai-headers sai-meta libsai

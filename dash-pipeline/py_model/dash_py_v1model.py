@@ -1,13 +1,13 @@
 import struct
 import socket
 
-from libs.__vars import *
-from libs.__obj_classes import *
+from py_model.libs.__vars import *
+from py_model.libs.__obj_classes import *
 
-from pmv1.dash_headers import *
-from pmv1.dash_metadata import *
-from pmv1.dash_parser import *
-from pmv1.dash_pipeline import *
+from py_model.data_plane.dash_headers import *
+from py_model.data_plane.dash_metadata import *
+from py_model.data_plane.dash_parser import *
+from py_model.data_plane.dash_pipeline import *
 
 def dash_verify_checksum():
     pass

@@ -3,9 +3,9 @@ import threading
 from enum import Enum
 from typing import Dict, List, Optional, Any
 
-from libs.__vars import *
-from libs.__utils import *
-from pmv1.dash_metadata import *
+from py_model.libs.__vars import *
+from py_model.libs.__utils import *
+from py_model.data_plane.dash_metadata import *
 
 class CounterType(Enum):
     PACKETS = "PACKETS"

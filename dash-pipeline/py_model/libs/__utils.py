@@ -1,6 +1,6 @@
 
 import logging
-from libs.__id_map import *
+from py_model.libs.__id_map import *
 
 # Configure logging
 logging.basicConfig(
