@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-TARGET_TYPE ?= bmv2
+TARGET_MODEL ?= bmv2
 
 IFACE0 = veth0
 IFACE1 = veth2
@@ -223,7 +223,7 @@ sai-headers: p4 docker-saithrift-bldr-image-exists | SAI/SAI
 		--name build_sai-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
 		-w /SAI $(DOCKER_SAITHRIFT_BLDR_IMG) \
-		make TARGET_TYPE=$(TARGET_TYPE)
+		make TARGET_MODEL=$(TARGET_MODEL)
 
 sai-meta:
 	@echo "Generate SAI metadata..."
@@ -364,7 +364,7 @@ saithrift-server: docker-saithrift-bldr-image-exists
 	$(DOCKER_RUN_SAITHRIFT_BLDR) \
 	    make $@
 
-ifeq ($(TARGET_TYPE), py_model)
+ifeq ($(TARGET_MODEL), py_model)
 PIPELINE_MOUNTS = \
 	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
 else
