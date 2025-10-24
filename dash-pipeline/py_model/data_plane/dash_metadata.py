@@ -10,17 +10,17 @@ class dash_pipeline_stage_t(IntEnum):
     INVALID                             = 0
 
     # Inbound
-    INBOUND_STAGE_START                 = 100
-    INBOUND_ROUTING                     = 100  # OUTBOUND_STAGE_START
+    INBOUND_STAGE_STARTING              = 1 #100
+    INBOUND_ROUTING                     = 2 #100
 
     # Outbound
-    OUTBOUND_STAGE_START                = 200
-    OUTBOUND_ROUTING                    = 200
-    OUTBOUND_MAPPING                    = 201
-    OUTBOUND_PRE_ROUTING_ACTION_APPLY   = 280
+    OUTBOUND_STAGE_STARTING             = 3 #200
+    OUTBOUND_ROUTING                    = 4 #200
+    OUTBOUND_MAPPING                    = 5 #201
+    OUTBOUND_PRE_ROUTING_ACTION_APPLY   = 6 #280
 
     # Common
-    ROUTING_ACTION_APPLY                = 300
+    ROUTING_ACTION_APPLY                = 7 #300
 
     __bitwidth__                        = 16
 

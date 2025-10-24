@@ -2,9 +2,8 @@ from py_model.libs.__vars import *
 from py_model.data_plane.dash_tunnel import *
 from py_model.data_plane.routing_actions.routing_actions import *
 
-def set_meter_attrs(
-    meter_class_or:  Annotated[int, 32],
-    meter_class_and: Annotated[int, 32]):
+def set_meter_attrs(meter_class_or:  Annotated[int, 32],
+                    meter_class_and: Annotated[int, 32]):
     
     meta.meter_context.meter_class_or = meta.meter_context.meter_class_or | meter_class_or
     meta.meter_context.meter_class_and = meta.meter_context.meter_class_and & meter_class_and
@@ -31,14 +30,13 @@ def route_vnet(dst_vnet_id                                   : Annotated[int, 16
 # Routing Type - vnet_direct:
 # - Forward with overrided destination overlay IP.
 # - No routing action will be populated in this routing type.
-def route_vnet_direct(
-    dst_vnet_id                                   : Annotated[int, 16],
-    dash_tunnel_id                                : Annotated[int, 16, {"type" : "sai_object_id_t"}],
-    overlay_ip_is_v6                              : Annotated[int, 1],
-    overlay_ip                                    : Annotated[int, IPv6Address_size, {"type" :"sai_ip_address_t"}],
-    meter_class_or                                : Annotated[int, 32],
-    meter_class_and                               : Annotated[int, 32, {"default_value" : "4294967295"}],
-    routing_actions_disabled_in_flow_resimulation : dash_flow_action_t):
+def route_vnet_direct(dst_vnet_id                                   : Annotated[int, 16],
+                      dash_tunnel_id                                : Annotated[int, 16, {"type" : "sai_object_id_t"}],
+                      overlay_ip_is_v6                              : Annotated[int, 1],
+                      overlay_ip                                    : Annotated[int, IPv6Address_size, {"type" :"sai_ip_address_t"}],
+                      meter_class_or                                : Annotated[int, 32],
+                      meter_class_and                               : Annotated[int, 32, {"default_value" : "4294967295"}],
+                      routing_actions_disabled_in_flow_resimulation : dash_flow_action_t):
     
     meta.dash_tunnel_id = dash_tunnel_id
     
@@ -108,13 +106,13 @@ def route_service_tunnel(overlay_dip_is_v6                             : Annotat
 
     set_meter_attrs(meter_class_or, meter_class_and)
     
-def set_tunnel_mapping( underlay_dip                                   : Annotated[int, IPv4Address_size , {"type" : "sai_ip_address_t"}],
-                        overlay_dmac                                   : Annotated[int, EthernetAddress_size],
-                        use_dst_vnet_vni                               : Annotated[int, 1],
-                        meter_class_or                                 : Annotated[int, 32],
-                        dash_tunnel_id                                 : Annotated[int, 16, {"type" : "sai_object_id_t"}],
-                        flow_resimulation_requested                    : Annotated[int, 1],
-                        routing_actions_disabled_in_flow_resimulation  : dash_flow_action_t):
+def set_tunnel_mapping(underlay_dip                                   : Annotated[int, IPv4Address_size , {"type" : "sai_ip_address_t"}],
+                       overlay_dmac                                   : Annotated[int, EthernetAddress_size],
+                       use_dst_vnet_vni                               : Annotated[int, 1],
+                       meter_class_or                                 : Annotated[int, 32],
+                       dash_tunnel_id                                 : Annotated[int, 16, {"type" : "sai_object_id_t"}],
+                       flow_resimulation_requested                    : Annotated[int, 1],
+                       routing_actions_disabled_in_flow_resimulation  : dash_flow_action_t):
     py_log("info", "set_tunnel_mapping called")
     
     meta.target_stage = dash_pipeline_stage_t.OUTBOUND_PRE_ROUTING_ACTION_APPLY
@@ -144,7 +142,7 @@ def set_private_link_mapping(underlay_dip                                   : An
     
     meta.target_stage = dash_pipeline_stage_t.OUTBOUND_PRE_ROUTING_ACTION_APPLY
     meta.dash_tunnel_id = dash_tunnel_id
-    print(f"set_private_link_mapping- > dash_encapsulation = {dash_encapsulation}")
+
     push_action_set_dmac(hdr.u0_ethernet.dst_addr)
  
     ##TODO Pass required arguments

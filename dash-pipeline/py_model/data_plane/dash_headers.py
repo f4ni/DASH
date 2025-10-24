@@ -94,7 +94,7 @@ class dash_flow_entry_bulk_get_session_mode_t(IntEnum):
     __bitwidth__                                                        = 16
 
 class dash_flow_entry_bulk_get_session_filter_key_t(IntEnum):
-    INVALID         = 0
+    INVAILD         = 0     #FIXME:: Farhan
     FLOW_TABLE_ID   = 1
     ENI_MAC         = 2
     IP_PROTOCOL     = 3
