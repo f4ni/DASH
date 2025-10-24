@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """
 Multi-file call-graph extractor
+
 Start from classes defined in dash_pipeline.py and follow Class.method chains across files,
 then expand leaf classes to list all their methods, including @staticmethod/@classmethod.
 Prints flat list.
+
+This is the refactor of your original MultiFileCallGraph using the shared helper.
 """
 
 import ast
 import os
 from collections import defaultdict
+from typing import List
+
+from py_model.scripts.gen_helper import parse_files, collect_class_methods, get_entry_class_names, get_full_name, called_classes
 
 
 class MultiFileCallGraph:
@@ -17,49 +23,27 @@ class MultiFileCallGraph:
         self.entry_file = os.path.join(self.directory, entry_file)
         self.class_defs = defaultdict(dict)  # {class_name: {method_name: ast.FunctionDef}}
         self.file_class_map = {}             # {class_name: file_path}
+        self.parsed_files = list(parse_files(self.directory))
         self._collect_defs()
 
     # ---------------------------
     # Parse files & collect defs
     # ---------------------------
-    def _parse_files(self):
-        for root, _, files in os.walk(self.directory):
-            for fname in files:
-                if fname.endswith(".py"):
-                    path = os.path.join(root, fname)
-                    try:
-                        with open(path, "r", encoding="utf-8") as f:
-                            yield path, ast.parse(f.read(), filename=path)
-                    except SyntaxError as e:
-                        print(f"⚠️ Skipping {path} due to SyntaxError: {e}")
-
     def _collect_defs(self):
-        """Populate self.class_defs and self.file_class_map."""
-        for path, tree in self._parse_files():
-            for node in tree.body:
-                if isinstance(node, ast.ClassDef):
-                    methods = {fn.name: fn for fn in node.body if isinstance(fn, ast.FunctionDef)}
-                    self.class_defs[node.name].update(methods)
-                    self.file_class_map[node.name] = path
-                elif isinstance(node, ast.FunctionDef):
-                    self.class_defs["__global__"][node.name] = node
+        class_defs, file_class_map, global_funcs = collect_class_methods(self.parsed_files)
+        self.class_defs.update(class_defs)
+        self.file_class_map.update(file_class_map)
+        # ensure a slot for global functions
+        self.class_defs.setdefault("__global__", {})
+        self.class_defs["__global__"].update(global_funcs)
 
     # ---------------------------
-    # Helpers: name resolution
+    # Helpers: name resolution (get_full_name imported)
     # ---------------------------
     def _get_full_name(self, node, current_class=None):
-        """Return dotted full name for Name/Attribute/Call nodes or None."""
-        if isinstance(node, ast.Name):
-            return node.id
-        if isinstance(node, ast.Attribute):
-            parent = self._get_full_name(node.value, current_class)
-            return (parent + "." + node.attr) if parent else node.attr
-        if isinstance(node, ast.Call):
-            return self._get_full_name(node.func, current_class)
-        return None
+        return get_full_name(node)
 
     def _extract_called_class(self, dotted_target):
-        """Return the class name if any part of dotted_target matches a known class."""
         if not dotted_target:
             return None
         parts = dotted_target.split(".")
@@ -69,7 +53,6 @@ class MultiFileCallGraph:
         return None
 
     def _should_skip(self, name: str) -> bool:
-        """Filter out unwanted calls like py_log or UPPERCASE names."""
         if not name:
             return True
         base = name.split(".")[-1]
@@ -78,10 +61,9 @@ class MultiFileCallGraph:
         return False
 
     def _called_targets(self, func_node, current_class):
-        """Return (called_classes, called_functions) from inside func_node."""
-        called_classes, called_funcs = set(), set()
+        called_classes_set, called_funcs = set(), set()
         if func_node is None:
-            return called_classes, called_funcs
+            return called_classes_set, called_funcs
 
         for stmt in ast.walk(func_node):
             if isinstance(stmt, ast.Call):
@@ -90,10 +72,10 @@ class MultiFileCallGraph:
                     continue
                 callee_class = self._extract_called_class(target)
                 if callee_class:
-                    called_classes.add(callee_class)
+                    called_classes_set.add(callee_class)
                 else:
                     called_funcs.add(target)
-        return called_classes, called_funcs
+        return called_classes_set, called_funcs
 
     # ---------------------------
     # Build graph
@@ -101,7 +83,6 @@ class MultiFileCallGraph:
     def build_graph(self, cls_name, visited=None):
         visited = set(visited or [])
         if cls_name in visited:
-            # Skip recursion entirely instead of adding a marker
             return {}
         visited.add(cls_name)
 
@@ -113,7 +94,6 @@ class MultiFileCallGraph:
 
         # expand all methods in this class
         for mname, mnode in methods.items():
-            # expand calls inside each method
             called_classes, called_funcs = self._called_targets(mnode, cls_name)
             subchildren = {}
             for callee in sorted(called_classes):
@@ -135,10 +115,9 @@ class MultiFileCallGraph:
         return {cls_name: children}
 
     def _expand_function(self, name, fn_node, current_class, visited):
-        """Recursively expand a function/method into its calls."""
-        called_classes, called_funcs = self._called_targets(fn_node, current_class)
+        called_classes_set, called_funcs = self._called_targets(fn_node, current_class)
         children = {}
-        for callee in sorted(called_classes):
+        for callee in sorted(called_classes_set):
             children.update(self.build_graph(callee, visited.copy()))
         for func in sorted(called_funcs):
             fn_node2 = None
@@ -158,8 +137,6 @@ class MultiFileCallGraph:
     # Flatten graph -> dotted chains
     # ---------------------------
     def _flatten_graph(self, node, prefix=""):
-        """Turn nested call chain dict into flat dot-separated chains.
-        Includes intermediate (non-leaf) function nodes as well."""
         results = []
         for name, children in node.items():
             full = f"{prefix}.{name}" if prefix else name
@@ -175,17 +152,13 @@ class MultiFileCallGraph:
         if not os.path.exists(self.entry_file):
             raise RuntimeError(f"Entry file not found: {self.entry_file!r}")
 
-        with open(self.entry_file, "r", encoding="utf-8") as f:
-            tree = ast.parse(f.read(), filename=self.entry_file)
-
-        class_nodes = [n for n in tree.body if isinstance(n, ast.ClassDef)]
-        if not class_nodes:
+        roots = get_entry_class_names(self.entry_file)
+        if not roots:
             print(f"No classes found in entry file: {self.entry_file}")
             return []
 
         raw_graphs = {}
-        for cls_node in class_nodes:
-            root = cls_node.name
+        for root in roots:
             raw_graphs[root] = self.build_graph(root)
 
         # flatten graphs
@@ -204,7 +177,9 @@ class MultiFileCallGraph:
 
         return sorted(set(all_chains))
 
+
 from typing import List
+
 
 def generate_action_chain(project_dir: str, entry_file: str = "dash_pipeline.py") -> List[str]:
     cg = MultiFileCallGraph(project_dir, entry_file=entry_file)

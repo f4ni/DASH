@@ -5,8 +5,6 @@ import itertools
 from typing import Optional
 from collections import OrderedDict
 
-from py_model.scripts.call_graph import find_string_references
-
 from py_model.libs.__id_map import *
 from py_model.libs.__jsonize import *
 from py_model.libs.__counters import *
@@ -55,19 +53,12 @@ def make_source_fragment(counter_obj, var_name="VarName") -> str:
 
 
 def make_vec_node(ctr_name: str) -> Optional[OrderedDict]:
+    filename, lineno = None, None
+
     ctr = DashCounters._counters.get(ctr_name)
     if ctr is None:
         print(f"Counter '{ctr_name}' not found in DashCounters._counters")
         return None
-
-    # Look for string references
-    filename, lineno = None, None
-    refs = find_string_references("pmv2", ctr_name)
-    if refs:
-        for filename, matches in refs.items():
-            for lineno, _ in matches:
-                break  # just keep first match
-        # You could extend this if you want all matches
 
     node = OrderedDict(
         Node_ID=next(node_id),

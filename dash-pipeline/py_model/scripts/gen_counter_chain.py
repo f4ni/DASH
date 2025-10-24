@@ -4,12 +4,16 @@ Optimized Multi-file Counter() chain extractor.
 
 Searches for DEFINE_*() and DEFINE_TABLE_*() calls inside classes,
 extracting counter names and resolving dotted call chains.
+
+Refactored to use multi_helper while keeping original behavior identical.
 """
 
 import ast
 import os
 from collections import defaultdict
 from typing import List, Tuple
+
+from py_model.scripts.gen_helper import parse_files, collect_class_methods, get_entry_class_names, extract_called_class_from_node, called_classes
 
 
 class MultiFileCounterGraph:
@@ -23,45 +27,25 @@ class MultiFileCounterGraph:
         self.counters = defaultdict(set)          # {class_name: {counter_names}}
         self.directcounters = defaultdict(set)    # {class_name: {table_counter_names}}
         self.called_class_cache = {}              # Cache per function node
-        self.class_call_cache = {}                # Cache per class (aggregated)
 
         # Parse and collect
-        self.parsed_files = list(self._parse_files())
+        self.parsed_files = list(parse_files(self.directory))
         self._collect_defs_and_counters()
-
-    # ---------------------------
-    # Parse all .py files (skip irrelevant dirs)
-    # ---------------------------
-    def _parse_files(self):
-        skip_dirs = {"__pycache__", "venv", "site-packages", "tests"}
-        for root, _, files in os.walk(self.directory):
-            if any(skip in root for skip in skip_dirs):
-                continue
-            for fname in files:
-                if not fname.endswith(".py"):
-                    continue
-                path = os.path.join(root, fname)
-                try:
-                    with open(path, "r", encoding="utf-8") as f:
-                        yield path, ast.parse(f.read(), filename=path)
-                except SyntaxError as e:
-                    print(f"⚠️ Skipping {path}: {e}")
 
     # ---------------------------
     # Collect class definitions and DEFINE_*() counters
     # ---------------------------
     def _collect_defs_and_counters(self):
+        class_defs, _, _ = collect_class_methods(self.parsed_files)
+        self.class_defs.update(class_defs)
+
+        # Collect DEFINE_* and DEFINE_TABLE_* calls inside class ASTs
         for path, tree in self.parsed_files:
             for node in tree.body:
                 if not isinstance(node, ast.ClassDef):
                     continue
 
-                # Store methods
-                self.class_defs[node.name].update(
-                    {fn.name: fn for fn in node.body if isinstance(fn, ast.FunctionDef)}
-                )
-
-                # Collect DEFINE_* and DEFINE_TABLE_* calls
+                # Walk over class subtree to find CALLS
                 for stmt in ast.walk(node):
                     if not isinstance(stmt, ast.Call):
                         continue
@@ -86,36 +70,24 @@ class MultiFileCounterGraph:
                                 print(f"[COUNTER] {node.name}: {cname}")
 
     # ---------------------------
-    # Extract called class from a Call node
+    # Extract called class from a Call node (reuse helper function)
     # ---------------------------
     def _extract_called_class(self, func_node):
-        """Return the class name if call target refers to a known class."""
-        if isinstance(func_node, ast.Attribute):
-            target = func_node
-            while isinstance(target, ast.Attribute):
-                if target.attr in self.class_defs:
-                    return target.attr
-                target = target.value
-            if isinstance(target, ast.Name) and target.id in self.class_defs:
-                return target.id
-        elif isinstance(func_node, ast.Name) and func_node.id in self.class_defs:
-            return func_node.id
-        return None
+        return extract_called_class_from_node(func_node, self.class_defs)
 
     def _called_classes(self, func_node):
-        """Return set of class names called inside a function."""
         if func_node is None:
             return set()
         if func_node in self.called_class_cache:
             return self.called_class_cache[func_node]
 
-        called_classes = {
+        called = {
             callee for stmt in ast.walk(func_node)
             if isinstance(stmt, ast.Call)
             and (callee := self._extract_called_class(stmt.func))
         }
-        self.called_class_cache[func_node] = called_classes
-        return called_classes
+        self.called_class_cache[func_node] = called
+        return called
 
     # ---------------------------
     # Recursive chain builder
@@ -147,17 +119,13 @@ class MultiFileCounterGraph:
         if not os.path.exists(self.entry_file):
             raise RuntimeError(f"Entry file not found: {self.entry_file!r}")
 
-        with open(self.entry_file, "r", encoding="utf-8") as f:
-            tree = ast.parse(f.read(), filename=self.entry_file)
-
-        class_nodes = [n for n in tree.body if isinstance(n, ast.ClassDef)]
-        if not class_nodes:
+        roots = get_entry_class_names(self.entry_file)
+        if not roots:
             print(f"No classes found in entry file: {self.entry_file}")
             return [], []
 
         all_chains, dir_chains = [], []
-        for cls_node in class_nodes:
-            root = cls_node.name
+        for root in roots:
             all_chains += self._build_chains(root, self.counters)
             dir_chains += self._build_chains(root, self.directcounters)
 

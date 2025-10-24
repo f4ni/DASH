@@ -1,18 +1,18 @@
-TARGET_TYPE ?= bmv2
+TARGET_MODEL ?= bmv2
 
 all: copysrc
-	@echo ">>> Generating SAI for target: $(TARGET_TYPE)"
+	@echo "Generating SAI for target: $(TARGET_MODEL)"
 
 	@{ \
-		if [ "$(TARGET_TYPE)" = "bmv2" ]; then \
+		if [ "$(TARGET_MODEL)" = "bmv2" ]; then \
 			ARTIFACTS_DIR="../bmv2/dash_pipeline.bmv2"; \
-		elif [ "$(TARGET_TYPE)" = "pymodel" ]; then \
+		elif [ "$(TARGET_MODEL)" = "pymodel" ]; then \
 			ARTIFACTS_DIR="../py_model/dash_pipeline.py_model"; \
 		else \
-			echo "Error: Unknown TARGET_TYPE='$(TARGET_TYPE)'. Use 'bmv2' or 'pymodel'."; \
+			echo "Error: Unknown TARGET_MODEL='$(TARGET_MODEL)'. Use 'bmv2' or 'pymodel'."; \
 			exit 1; \
 		fi; \
-		echo ">>> Using artifacts from: $$ARTIFACTS_DIR"; \
+		echo "Using artifacts from: $$ARTIFACTS_DIR"; \
 		if [ ! -f "$$ARTIFACTS_DIR/dash_pipeline_p4rt.json" ]; then \
 			echo "Error: $$ARTIFACTS_DIR/dash_pipeline_p4rt.json not found."; \
 			exit 1; \

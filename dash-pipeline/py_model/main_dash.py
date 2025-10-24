@@ -40,14 +40,8 @@ def sniff_packet() -> None:
             py_log("warn", f"Egress port index {egress_idx} out of range — dropping packet.")
 
     iface_list = vars.iface_list
-    # py_log("info", "Starting packet sniffing on interfaces:", iface_list)
 
-    sniff(
-        iface=iface_list,
-        prn=process_packet,
-        store=False,
-        filter="inbound"
-    )
+    sniff(iface=iface_list, prn=process_packet, store=False, filter="inbound")
 
 
 def setup_interfaces(args: list[str]) -> None:
