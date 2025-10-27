@@ -1,0 +1,109 @@
+name: DASH-BMV2-CI
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - '.gitmodules'
+      - '.github/workflows/dash-pymodel-ci.yml'
+      - 'test/**.py'
+      - 'test/**requirements.txt'
+      - 'test/**.sh'
+      - 'test/**.yml'
+      - 'dash-pipeline/**'
+      - '!dash-pipeline/dockerfiles/Dockerfile.*'
+      - '!dash-pipeline/bmv2*'
+      - 'dash-pipeline/dockerfiles/*.env'
+      - '!dash-pipeline/.dockerignore'
+      - '!dash-pipeline/**.md'
+      - '!dash-pipeline/**.svg'
+      - '!dash-pipeline/**.png'
+      - '!dash-pipeline/**.txt'
+  pull_request:
+    branches: [ "**" ]
+    paths:
+      - '.gitmodules'
+      - '.github/workflows/dash-pymodel-ci.yml'
+      - 'test/**.py'
+      - 'test/**requirements.txt'
+      - 'test/**.sh'
+      - 'test/**.yml'
+      - 'dash-pipeline/**'
+      - '!dash-pipeline/dockerfiles/Dockerfile.*'
+      - '!dash-pipeline/bmv2*'
+      - 'dash-pipeline/dockerfiles/*.env'
+      - '!dash-pipeline/.dockerignore'
+      - '!dash-pipeline/**.md'
+      - '!dash-pipeline/**.svg'
+      - '!dash-pipeline/**.png'
+      - '!dash-pipeline/**.txt'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Test DASH Pipeline
+    runs-on: ubuntu-22.04
+    env:
+      docker_fg_flags: --privileged
+      docker_fg_root_flags: --privileged -u root
+      docker_bg_flags: -d --privileged
+    defaults:
+      run:
+        working-directory: ./dash-pipeline
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build python software switch and PyInfo
+      run:  DOCKER_FLAGS=$docker_fg_flags make py-artifacts
+    - name: Update SAI submodule
+      run:  git submodule update --init
+    - name: Pull/Build docker saithrift-bldr image
+      run:  make docker-saithrift-bldr
+    - name: Pull/Build docker bmv2-bldr image
+      run:  make docker-bmv2-bldr
+    - name: Generate SAI API
+      run:  DOCKER_FLAGS=$docker_fg_flags make sai TARGET_MODEL=pymodel
+    - name: Pull/Build docker dpapp image
+      run:  make docker-dash-dpapp
+    - name: Build bmv2 dpapp
+      run:  DOCKER_FLAGS=$docker_fg_flags make dpapp
+    - name: Run pymodel
+      run:  DOCKER_FLAGS=$docker_fg_flags make pymodel HAVE_DPAPP=y
+    - name: Check if SAI spec is updated
+      run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
+    - name: Build libsai c++ tests
+      run:  DOCKER_FLAGS=$docker_fg_flags make test
+    - name: Prepare network
+      run:  DOCKER_FLAGS=$docker_fg_flags make network HAVE_DPAPP=y
+    - name: Run P4 software switch (bmv2) with P4Runtime
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-switch HAVE_DPAPP=y
+    - name: Force bmv2 to load forwarding pipeline config via dummy libsai call
+      run:  DOCKER_FLAGS=$docker_fg_flags make init-switch
+    - name: Test SAI library over P4RT to switch
+      run:  DOCKER_FLAGS=$docker_fg_flags make run-libsai-test
+    - name: Run dpapp
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp HAVE_DPAPP=y
+    - name: Generate saithrift-server
+      run:  DOCKER_FLAGS=$docker_fg_flags make saithrift-server
+    - name: Generate saithrift-client local docker
+      run:  DOCKER_FLAGS=$docker_fg_flags make docker-saithrift-client
+    - name: Run saithrift server
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server
+    - name: Run PTF Tests
+      run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests
+    - name: Deploy ixia-c Traffic Generator
+      run:  DOCKER_FLAGS=$docker_fg_flags make deploy-ixiac
+    - name: Run Pytests
+      run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-pytests
+    - name: Pull/Build SAI-Challenger client builder docker image
+      run:  DOCKER_FLAGS=$docker_fg_flags make docker-saichallenger-client-bldr
+    - name: Build SAI-Challenger client docker image
+      run:  DOCKER_FLAGS=$docker_fg_flags make docker-saichallenger-client
+    - name: Run SAI-Challenger Tests
+      run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saichallenger-tests
+    - name: Build libsai debian packages
+      run:  DOCKER_FLAGS=$docker_fg_root_flags make libsai-debs
+    - uses: actions/upload-artifact@v4
+      with:
+        name: libsai-debian-packages
+        path: /home/runner/work/DASH/DASH/dash-pipeline/SAI/debian/*deb
+        if-no-files-found: error

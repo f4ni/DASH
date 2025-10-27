@@ -2,8 +2,8 @@ import json
 import time
 import grpc
 from concurrent import futures
-from py_model.control_plane.p4.v1 import p4runtime_pb2
-from py_model.control_plane.p4.v1 import p4runtime_pb2_grpc
+from py_model.control_plane.p4_helper.v1 import p4runtime_pb2
+from py_model.control_plane.p4_helper.v1 import p4runtime_pb2_grpc
 import google.protobuf.json_format as json_format
 from py_model.libs.__id_map import *
 

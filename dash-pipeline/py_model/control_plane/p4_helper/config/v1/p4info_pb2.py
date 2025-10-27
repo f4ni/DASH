@@ -12,7 +12,7 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
-from py_model.control_plane.p4.config.v1 import p4types_pb2 as p4_dot_config_dot_v1_dot_p4types__pb2
+from py_model.control_plane.p4_helper.config.v1 import p4types_pb2 as p4_dot_config_dot_v1_dot_p4types__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

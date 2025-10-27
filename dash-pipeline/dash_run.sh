@@ -44,9 +44,9 @@ case "$1" in
     # --- Core Run Targets ---
     pymodel)
         echo "Running Python Model with DPAPP..."
-        make network HAVE_DPAPP=y
+        # sudo make network HAVE_DPAPP=y
         remove_container "pymodel_dash"
-        make pymodel HAVE_DPAPP=y
+        sudo make pymodel HAVE_DPAPP=y
         ;;
 
     bmv2)

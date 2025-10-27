@@ -14,8 +14,8 @@ _sym_db = _symbol_database.Default()
 
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from google.rpc import status_pb2 as google_dot_rpc_dot_status__pb2
-from py_model.control_plane.p4.config.v1 import p4info_pb2 as p4_dot_config_dot_v1_dot_p4info__pb2
-from py_model.control_plane.p4.v1 import p4data_pb2 as p4_dot_v1_dot_p4data__pb2
+from py_model.control_plane.p4_helper.config.v1 import p4info_pb2 as p4_dot_config_dot_v1_dot_p4info__pb2
+from py_model.control_plane.p4_helper.v1 import p4data_pb2 as p4_dot_v1_dot_p4data__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
