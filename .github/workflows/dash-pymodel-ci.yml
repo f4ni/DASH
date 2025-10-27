@@ -1,4 +1,4 @@
-name: DASH-BMV2-CI
+name: DASH-PYMODEL-CI
 
 on:
   push:
