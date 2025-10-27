@@ -1,15 +1,15 @@
-TARGET_MODEL ?= bmv2
+TARGET ?= bmv2
 
 all: copysrc
-	@echo "Generating SAI for target: $(TARGET_MODEL)"
+	@echo "Generating SAI for target: $(TARGET)"
 
 	@{ \
-		if [ "$(TARGET_MODEL)" = "bmv2" ]; then \
+		if [ "$(TARGET)" = "bmv2" ]; then \
 			ARTIFACTS_DIR="../bmv2/dash_pipeline.bmv2"; \
-		elif [ "$(TARGET_MODEL)" = "pymodel" ]; then \
+		elif [ "$(TARGET)" = "pymodel" ]; then \
 			ARTIFACTS_DIR="../py_model/dash_pipeline.py_model"; \
 		else \
-			echo "Error: Unknown TARGET_MODEL='$(TARGET_MODEL)'. Use 'bmv2' or 'pymodel'."; \
+			echo "Error: Unknown TARGET='$(TARGET)'. Use 'bmv2' or 'pymodel'."; \
 			exit 1; \
 		fi; \
 		echo "Using artifacts from: $$ARTIFACTS_DIR"; \

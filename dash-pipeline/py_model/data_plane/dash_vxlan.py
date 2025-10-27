@@ -1,10 +1,10 @@
 from py_model.libs.__vars import *
 
-def vxlan_encap(underlay_dmac : Annotated[int, 48],
-                underlay_smac : Annotated[int, 48],
-                underlay_dip  : Annotated[int, 32],
-                underlay_sip  : Annotated[int, 32],
-                overlay_dmac  : Annotated[int, 48],
+def vxlan_encap(underlay_dmac : Annotated[int, EthernetAddress_size],
+                underlay_smac : Annotated[int, EthernetAddress_size],
+                underlay_dip  : Annotated[int, IPv4Address_size],
+                underlay_sip  : Annotated[int, IPv4Address_size],
+                overlay_dmac  : Annotated[int, EthernetAddress_size],
                 vni           : Annotated[int, 24]):
     hdr.inner_ethernet = hdr.ethernet
     hdr.inner_ethernet.dst_addr = overlay_dmac

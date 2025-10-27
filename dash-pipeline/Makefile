@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-TARGET_MODEL ?= bmv2
+TARGET ?= bmv2
 
 IFACE0 = veth0
 IFACE1 = veth2
@@ -58,6 +58,13 @@ include dockerfiles/DOCKER_BMV2_BLDR_IMG.env
 # Runs bmv2 process - consider slimmer if don't need sai/p4rt clients inside
 DOCKER_BMV2_RUN_IMG ?=$(DOCKER_BMV2_BLDR_IMG)
 
+# Builds sai-P4rt clients to run inside pymodel process
+# include file defines DOCKER_PYMODEL_BLDR_IMG_NAME and DOCKER_PYMODEL_BLDR_IMG_CTAG
+include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
+
+# Runs pymodel process - consider slimmer if don't need sai/p4rt clients inside
+DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
+
 # Compiles sai headers, libsai, saithrift server & client/server libs
 # include file defines DOCKER_SAITHRIFT_BLDR_IMG_NAME and DOCKER_SAITHRIFT_BLDR_IMG_CTAG
 include dockerfiles/DOCKER_SAITHRIFT_BLDR_IMG.env
@@ -96,6 +103,14 @@ DOCKER_RUN := docker run \
 
 SHA1SUM := sha1sum | awk '{print substr($$1,0,11);}'
 
+ifeq ($(TARGET),bmv2)
+  MODEL_BLDR_IMG := $(DOCKER_BMV2_BLDR_IMG)
+else ifeq ($(TARGET),pymodel)
+  MODEL_BLDR_IMG := $(DOCKER_PYMODEL_BLDR_IMG)
+else
+  $(error Invalid TARGET '$(TARGET)'. Must be 'bmv2' or 'pymodel')
+endif
+
 SAI/SAI: sai-submodule
 
 sai-submodule:
@@ -105,19 +120,12 @@ sai-submodule:
 	cd SAI/SAI/test && git submodule update --init ptf
 
 
-######################################
-# P4 Source code compile TARGETS
-######################################
+#######################
+# Python DASH Model 
+#######################
 
-P4_SRC=$(wildcard bmv2/**/*.p4) $(wildcard bmv2/*.h)
-P4_MAIN=bmv2/dash_pipeline.p4
-P4_OUTDIR=bmv2/dash_pipeline.bmv2
-P4_ARTIFACTS=$(P4_OUTDIR)/dash_pipeline.json $(P4_OUTDIR)/dash_pipeline_p4rt.txt
-
-PY_DIR=py_model
-PY_OUTDIR=$(PY_DIR)/dash_pipeline.py_model
+PY_OUTDIR=py_model/dash_pipeline.py_model
 PY_ARTIFACTS=$(PY_OUTDIR)/dash_pipeline_p4rt.json $(PY_OUTDIR)/dash_pipeline_p4rt.txt
-
 
 py-artifacts:
 	@echo "Generating artifacts for pymodel..."
@@ -132,6 +140,15 @@ pymodel:
 	make network $(if $(filter y,$(HAVE_DPAPP)),HAVE_DPAPP=y)
 	python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
 
+
+######################################
+# P4 Source code compile TARGETS
+######################################
+
+P4_SRC=$(wildcard bmv2/**/*.p4) $(wildcard bmv2/*.h)
+P4_MAIN=bmv2/dash_pipeline.p4
+P4_OUTDIR=bmv2/dash_pipeline.bmv2
+P4_ARTIFACTS=$(P4_OUTDIR)/dash_pipeline.json $(P4_OUTDIR)/dash_pipeline_p4rt.txt
 
 p4: $(P4_ARTIFACTS)
 
@@ -223,7 +240,7 @@ sai-headers: p4 docker-saithrift-bldr-image-exists | SAI/SAI
 		--name build_sai-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
 		-w /SAI $(DOCKER_SAITHRIFT_BLDR_IMG) \
-		make TARGET_MODEL=$(TARGET_MODEL)
+		make TARGET=$(TARGET)
 
 sai-meta:
 	@echo "Generate SAI metadata..."
@@ -251,7 +268,7 @@ SAI/lib/libsai.so: sai-headers sai-meta
 		-w /SAI/lib \
 		--name build_libsai-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
-		$(DOCKER_BMV2_BLDR_IMG) \
+		$(MODEL_BLDR_IMG) \
 	    make
 
 .PHONY:libsai-clean
@@ -364,7 +381,7 @@ saithrift-server: docker-saithrift-bldr-image-exists
 	$(DOCKER_RUN_SAITHRIFT_BLDR) \
 	    make $@
 
-ifeq ($(TARGET_MODEL), py_model)
+ifeq ($(TARGET), py_model)
 PIPELINE_MOUNTS = \
 	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
 else
@@ -419,7 +436,7 @@ libsai-test: SAI/lib/libsai.so
 	$(DOCKER_RUN) \
 	    --name dash-build-test-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
-		-w /tests/libsai  $(DOCKER_BMV2_BLDR_IMG) \
+		-w /tests/libsai  $(MODEL_BLDR_IMG) \
 	    make
 
 timeout?=5
@@ -455,9 +472,9 @@ init-switch:
 	done; \
 	docker exec -w /tests/libsai/init_switch simple_switch-$(USER) ./init_switch
 
-###############################
-# DOCKER BUILD/PUBLISH TARGETS
-###############################
+####################################
+# BMv2 DOCKER BUILD/PUBLISH TARGETS
+####################################
 
 DOCKER_BMV2_BLDR_IMG_TAG = $(shell cat dockerfiles/Dockerfile.bmv2-bldr | $(SHA1SUM))
 DOCKER_BMV2_BLDR_IMG = $(DOCKER_BMV2_BLDR_IMG_NAME):$(DOCKER_BMV2_BLDR_IMG_TAG)
