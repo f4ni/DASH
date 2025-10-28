@@ -130,6 +130,7 @@ py-artifacts-clean:
 pymodel:
 	@echo "Running pymodel..."
 	make network $(if $(filter y,$(HAVE_DPAPP)),HAVE_DPAPP=y)
+	python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
 	
 
 
@@ -143,7 +144,7 @@ run-pymodel: network
 		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
 		$(DOCKER_PYMODEL_RUN_IMG) \
 		env LD_LIBRARY_PATH=/usr/local/lib \
-		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
+		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK) 
 	
 kill-pymodel:
 	-docker kill pymodel-$(USER)

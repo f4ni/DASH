@@ -1,15 +1,22 @@
-# Use Ubuntu 24.04 which has Python 3.12 by default
+# Stage 1: GRPC base (for copying libraries only)
+FROM sonicdash.azurecr.io/dash-grpc:1.43.2 as grpc
+# Don't run commands here if the image is minimal
+
+# Stage 2: Main base image
 FROM ubuntu:24.04 AS base
 
-# Copy GRPC libraries from the minimal grpc image
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/lib*grpc*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libabsl*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libgpr*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libupb*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libre2*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libaddress_sorting*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libssl*.so* /usr/local/lib/
-COPY --from=sonicdash.azurecr.io/dash-grpc:1.43.2 /usr/local/lib/libcrypto*.so* /usr/local/lib/
+
+# Copy libabsl .a files from p4pi, make shared lib for our use and delete .a's
+COPY --from=grpc /usr/local/lib/lib*grpc*.so* \
+        /usr/local/lib/libabsl*.so* \
+        /usr/local/lib/libgpr*.so* \
+        /usr/local/lib/libupb*.so* \
+        /usr/local/lib/libre2*.so* \
+        /usr/local/lib/libaddress_sorting*.so* \
+        /usr/local/lib/libssl*.so* \
+        /usr/local/lib/libcrypto*.so* \
+        ./
+
 
 ARG TZ=America/Los_Angeles
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -42,6 +49,8 @@ RUN python3 -m pip install --break-system-packages \
     protobuf==3.20.* \
     googleapis-common-protos \
     packaging
+
+
 
 ###################
 # Builder stage
@@ -83,7 +92,6 @@ RUN if [ -f /py_model/setup.py ] || [ -f /py_model/pyproject.toml ]; then \
 
 # make build artifacts dir (optional)
 RUN mkdir -p /artifacts && cp -a /py_model /artifacts/ || true
-
 
 ###################
 # Runtime stage
