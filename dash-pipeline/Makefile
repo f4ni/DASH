@@ -139,6 +139,24 @@ pymodel:
 	@echo "Running pymodel..."
 	make network $(if $(filter y,$(HAVE_DPAPP)),HAVE_DPAPP=y)
 	python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
+	
+
+
+.PHONY:run-pymodel
+run-pymodel: network
+	$(DOCKER_RUN) \
+		-it \
+		--name pymodel-$(USER) \
+		-u root \
+		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
+		$(DOCKER_PYMODEL_RUN_IMG) \
+		env LD_LIBRARY_PATH=/usr/local/lib \
+		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK) 
+	
+kill-pymodel:
+	-docker kill pymodel-$(USER)
+
 
 
 ######################################
@@ -476,6 +494,35 @@ init-switch:
 # BMv2 DOCKER BUILD/PUBLISH TARGETS
 ####################################
 
+include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
+
+DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
+
+DOCKER_PYMODEL_IMG_TAG = $(shell cat py_model/container/Dockerfile.pymodel | $(SHA1SUM))
+DOCKER_PYMODEL_BLDR_IMG = $(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_TAG)
+
+docker-pymodel-bldr:
+	{ [ x$(ENABLE_DOCKER_PULL) == xy ] && docker pull $(DOCKER_PYMODEL_BLDR_IMG); } || \
+	docker build \
+		-f dockerfiles/Dockerfile.pymodel-bldr \
+		--target builder \
+	    -t $(DOCKER_PYMODEL_BLDR_IMG) \
+	    --build-arg user=$(DASH_USER) \
+	    --build-arg group=$(DASH_GROUP) \
+	    --build-arg uid=$(DASH_UID) \
+	    --build-arg guid=$(DASH_GUID) \
+	    --build-arg hostname=$(DASH_HOST) \
+	    --build-arg available_processors=$(shell nproc) \
+	    . 
+	[ -n $(DOCKER_PYMODEL_IMG_CTAG) ] && \
+		docker tag $(DOCKER_PYMODEL_BLDR_IMG) \
+		$(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG)
+
+
+###############################
+# DOCKER BUILD/PUBLISH TARGETS
+###############################
+
 DOCKER_BMV2_BLDR_IMG_TAG = $(shell cat dockerfiles/Dockerfile.bmv2-bldr | $(SHA1SUM))
 DOCKER_BMV2_BLDR_IMG = $(DOCKER_BMV2_BLDR_IMG_NAME):$(DOCKER_BMV2_BLDR_IMG_TAG)
 
@@ -494,6 +541,7 @@ docker-bmv2-bldr:
 	[ -n $(DOCKER_BMV2_BLDR_IMG_CTAG) ] && \
 		docker tag $(DOCKER_BMV2_BLDR_IMG) \
 		$(DOCKER_BMV2_BLDR_IMG_NAME):$(DOCKER_BMV2_BLDR_IMG_CTAG)
+		
 
 docker-pull-bmv2-bldr:
 	docker pull $(DOCKER_BMV2_BLDR_IMG)
@@ -928,4 +976,8 @@ run-saichallenger-tutorials: deploy-ixiac
 	$(DOCKER_FLAGS) \
 	$(DOCKER_SAI_CHALLENGER_CLIENT_IMG) \
 	./run-tests.sh --setup=$(SAI_CHALLENGER_SETUP_FILE) tutorial
+
+
+
+
 

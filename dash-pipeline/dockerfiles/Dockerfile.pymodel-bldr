@@ -1,0 +1,115 @@
+# Stage 1: GRPC base (for copying libraries only)
+FROM sonicdash.azurecr.io/dash-grpc:1.43.2 as grpc
+# Don't run commands here if the image is minimal
+
+# Stage 2: Main base image
+FROM ubuntu:24.04 AS base
+
+
+# Copy libabsl .a files from p4pi, make shared lib for our use and delete .a's
+COPY --from=grpc /usr/local/lib/lib*grpc*.so* \
+        /usr/local/lib/libabsl*.so* \
+        /usr/local/lib/libgpr*.so* \
+        /usr/local/lib/libupb*.so* \
+        /usr/local/lib/libre2*.so* \
+        /usr/local/lib/libaddress_sorting*.so* \
+        /usr/local/lib/libssl*.so* \
+        /usr/local/lib/libcrypto*.so* \
+        ./
+
+
+ARG TZ=America/Los_Angeles
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+ENV GIT_SSL_NO_VERIFY=true DEBIAN_FRONTEND=noninteractive
+
+# Ubuntu 24.04 already has Python 3.12, install available packages via apt
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-venv \
+        python3-dev \
+        python3-bitarray \
+        python3-yaml \
+        libprotobuf-dev \
+        protobuf-compiler \
+        libpcap-dev \
+        curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python packages via pip with --break-system-packages
+RUN python3 -m pip install --break-system-packages \
+    scapy \
+    openpyxl \
+    cerberus \
+    python-docx \
+    grpcio \
+    google-cloud-storage \
+    protobuf==3.20.* \
+    googleapis-common-protos \
+    packaging
+
+
+
+###################
+# Builder stage
+###################
+FROM base AS builder
+ARG available_processors
+ARG user=dashuser
+ARG group=dashusers
+ARG uid=4321
+ARG guid=4321
+
+# build deps
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential git pkg-config \
+      libssl-dev libffi-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# create matching user (so mounted volumes work)
+RUN groupadd -f -g ${guid} ${group} || true && \
+    useradd -m -u ${uid} -g ${guid} -s /bin/bash ${user} || true && \
+    echo "${user} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER ${user}
+WORKDIR /
+
+# copy project (if present) and optional requirements
+COPY --chown=${user}:${group} py_model /py_model
+
+# install requirements if provided
+RUN if [ -f /py_model/requirements.txt ]; then \
+      python3 -m pip install --break-system-packages --user -r /py_model/requirements.txt; \
+    fi
+
+# install editable (so builder can run tests/pack artifacts)
+RUN if [ -f /py_model/setup.py ] || [ -f /py_model/pyproject.toml ]; then \
+      python3 -m pip install --break-system-packages --user -e /py_model || true; \
+    fi
+
+# make build artifacts dir (optional)
+RUN mkdir -p /artifacts && cp -a /py_model /artifacts/ || true
+
+###################
+# Runtime stage
+###################
+FROM base AS runtime
+ARG user=dashuser
+ARG group=dashusers
+ARG uid=4321
+ARG guid=4321
+
+# Copy project from builder
+COPY --from=builder /py_model /py_model
+
+RUN groupadd -f -g ${guid} ${group} || true && \
+    useradd -m -u ${uid} -g ${guid} -s /bin/bash ${user} || true
+
+ENV PYTHONPATH=/py_model
+
+USER ${user}
+WORKDIR /
+CMD ["/bin/bash"]
