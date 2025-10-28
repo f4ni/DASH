@@ -60,10 +60,10 @@ DOCKER_BMV2_RUN_IMG ?=$(DOCKER_BMV2_BLDR_IMG)
 
 # Builds sai-P4rt clients to run inside pymodel process
 # include file defines DOCKER_PYMODEL_BLDR_IMG_NAME and DOCKER_PYMODEL_BLDR_IMG_CTAG
-include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
+# include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
 
 # Runs pymodel process - consider slimmer if don't need sai/p4rt clients inside
-DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
+# DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
 
 # Compiles sai headers, libsai, saithrift server & client/server libs
 # include file defines DOCKER_SAITHRIFT_BLDR_IMG_NAME and DOCKER_SAITHRIFT_BLDR_IMG_CTAG
@@ -268,7 +268,7 @@ SAI/lib/libsai.so: sai-headers sai-meta
 		-w /SAI/lib \
 		--name build_libsai-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
-		$(MODEL_BLDR_IMG) \
+		$(DOCKER_BMV2_BLDR_IMG) \
 	    make
 
 .PHONY:libsai-clean

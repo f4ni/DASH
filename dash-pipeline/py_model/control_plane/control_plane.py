@@ -22,13 +22,9 @@ class InsertRequest:
                 self.prefix_len = 0
 
         class Range:
-            # first : str
-            # last  : str
             low : str
             high  : str
             def __init__(self):
-                # self.first = ""
-                # self.last = ""
                 self.low = ""
                 self.high = ""
 
@@ -86,7 +82,7 @@ def resolve_action_name(name: str, ctx=None):
             else:
                 obj = getattr(obj, part)
         except (KeyError, AttributeError) as e:
-            print(f"[resolve_action_name] ERROR: cannot resolve '{part}' - {e}")
+            py_log("info", f"ERROR: cannot resolve '{part}' - {e}")
             return None
     return obj
 
@@ -121,13 +117,13 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
 
     for idx, val in builtins.enumerate(insertRequest.values):
         if idx >= len(key_format):
-            print(f"Skipping index {idx}, no matching key format.")
+            py_log("info", f"Skipping index {idx}, no matching key format.")
             continue
 
         match_type = key_format[idx]
 
         if match_type is EXACT:
-            # print(f"EXACT | value: {val.exact}")
+            # py_log("info", f"EXACT | value: {val.exact}")
             entry.values.append(val.exact)
 
         elif match_type is TERNARY:
@@ -136,9 +132,8 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
                 ternary.value = int(val.ternary.value, 16)
                 ternary.mask = int(val.ternary.mask, 16)
             except Exception as e:
-                print(f"TERNARY conversion error: {e}")
+                py_log("error", f"TERNARY conversion error: {e}")
                 continue
-            # print(f"TERNARY | value: {hex(ternary.value)} | mask: {hex(ternary.mask)}")
             entry.values.append(ternary)
 
         elif match_type is LIST:
@@ -149,7 +144,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
                     tern.value = int(t.value, 16)
                     tern.mask = t.mask
                 except Exception as e:
-                    print(f"LIST item conversion error: {e}")
+                    py_log("error", f"LIST item conversion error: {e}")
                     continue
                 ternary_list.append(tern)
             entry.values.append(ternary_list)
@@ -159,7 +154,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
                 rng.low = int(val.range.low, 16)
                 rng.high = int(val.range.high, 16)
             except Exception as e:
-                print(f"RANGE conversion error: {e}")
+                py_log("error", f"RANGE conversion error: {e}")
                 continue
             entry.values.append(rng)
         elif match_type is RANGE_LIST:
@@ -170,7 +165,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
                     rng.low = int(r.low, 16)
                     rng.high = int(r.high, 16)
                 except Exception as e:
-                    print(f"RANGE_LIST item conversion error: {e}")
+                    py_log("error", f"RANGE_LIST item conversion error: {e}")
                     continue
                 rng_list.append(rng)
             entry.values.append(rng_list)
@@ -183,10 +178,10 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
     action_id = insertRequest.action
     if action_id is not None:
         action_name = get_action_name(action_id)
-        print(f"action_name: {action_name}\n")
+        py_log(f"Action: {action_name}")
         action_obj = resolve_action_name(action_name)
         if not action_obj:
-            print(f"Could not resolve action name: {action_name}")
+            py_log("info", f"Could not resolve action name: {action_name}")
             return None
         entry.action = action_obj
 
@@ -197,7 +192,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
     entry.priority = insertRequest.priority
     return entry
 
-def table_insert_api(insertRequest: InsertRequest, json_obj_type):
+def table_insert_api(insertRequest: InsertRequest, req_type):
     table_id = insertRequest.table
     table_name = get_table_name(table_id)
     if table_name == "unknown":
@@ -215,18 +210,22 @@ def table_insert_api(insertRequest: InsertRequest, json_obj_type):
     if not entry:
         return RETURN_FAILURE
 
-    if json_obj_type == 'INSERT':
+    if req_type == 'INSERT':
         for e in table.entries:
             if e.values == entry.values:
-                print("Match entry exists, use MODIFY if you wish to change action")
+                py_log("info", "Match entry exists, use MODIFY if you wish to change action")
                 return RETURN_FAILURE
-        table.insert(entry)
-    elif json_obj_type == 'MODIFY':
-        table.update(entry)
-    elif json_obj_type == 'DELETE':
-        table.delete(entry)
+        ret = table.insert(entry)
+    elif req_type == 'MODIFY':
+        ret = table.update(entry)
+    elif req_type == 'DELETE':
+        ret = table.delete(entry)
+        if ret == RETURN_SUCCESS:
+            py_log("info", f"Entry deleted from Table {table_name}")
+        else:
+            py_log("info", f"Failed deleting the entry from Table {table_name}")
     else:
-        print(f"Unknown operation type: {json_obj_type}")
+        py_log("info", f"Unknown operation type: {req_type}")
         return RETURN_FAILURE
 
     return RETURN_SUCCESS
@@ -255,9 +254,9 @@ def parse_insert_request(json_obj):
     insertRequest = InsertRequest()
 
     # Extract table entry information
-    json_obj_type = json_obj.get("type", {})
-    print(f"\nReceived request: {json_obj_type}")
-    print("=" * 25)
+    req_type = json_obj.get("type", {})
+    py_log(f"\nReceived request: {req_type}")
+    py_log("=" * 25)
 
     table_entry = json_obj.get("entity", {}).get("tableEntry", {})
 
@@ -266,36 +265,31 @@ def parse_insert_request(json_obj):
     # Table ID
     insertRequest.table = table_entry.get("tableId", [])
     table_name = get_table_name(insertRequest.table)
-    print(f"Reading table {insertRequest.table} : {table_name}")
 
     table = resolve_table_name(table_name)
 
     keys = list(table.key.keys())
-    num_fields = len(keys)
-
-    print(f"Table {insertRequest.table} : {table_name}")
+    py_log("info", f"Table {table_name}")
 
     # Process match fields
     insertRequest.values = []
     match_fields = table_entry.get("match", [])
-    print("Match Fields:")
+    py_log(None, "Match Fields:")
     for idx, match_field in builtins.enumerate(match_fields):
         fieldId = match_field["fieldId"] - 1
-        # fieldId = idx
-        # print(f"* match field [{idx}]: {match_field}")
 
         value = InsertRequest.Value()
 
         if "exact" in match_field:
             value.exact = get_hex_value(match_field["exact"]["value"])
-            print(f"* {keys[fieldId]}: Exact : {value.exact}")
+            py_log(None, f"* {keys[fieldId]}: Exact : {value.exact}")
 
         if "ternary" in match_field:
             value.ternary = InsertRequest.Value.Ternary()
             value.ternary.value = get_hex_value(match_field["ternary"]["value"])
             value.ternary.mask = get_hex_value(match_field["ternary"]["mask"])
             value.ternary_list.append(value.ternary)
-            print(f"* {keys[fieldId]}: TERNARY : {value.ternary.value} && {value.ternary.mask}")
+            py_log(None, f"* {keys[fieldId]}: TERNARY : {value.ternary.value} && {value.ternary.mask}")
 
         if "optional" in match_field:
             if keys[fieldId] == 'meta.dst_ip_addr' or keys[fieldId] == 'meta.src_ip_addr' or keys[fieldId] == 'meta.ip_protocol':
@@ -306,42 +300,36 @@ def parse_insert_request(json_obj):
                 num_bytes = (decimal_val.bit_length() + 7) // 8  # Round up to the nearest # of bytes
                 value.ternary.mask = (1 << (num_bytes * 8)) - 1  # Same as repeating 0xFF per byte
                 value.ternary_list.append(value.ternary)
-                print(f"* {keys[fieldId]}: TERNARY - LIST : {value.ternary.value} && {hex(value.ternary.mask)}")
+                py_log(None, f"* {keys[fieldId]}: TERNARY - LIST : {value.ternary.value} && {hex(value.ternary.mask)}")
             elif keys[fieldId] == 'meta.src_l4_port' or keys[fieldId] == 'meta.dst_l4_port':
                 value.range = InsertRequest.Value.Range()
                 hex_val = get_hex_value(match_field["optional"]["value"])
                 value.range.low = hex_val
                 value.range.high = hex_val
                 value.range_list.append(value.range)
-                print(f"* {keys[fieldId]}: RANGE - LIST: {value.range.low} -> {value.range.high}")
+                py_log(None, f"* {keys[fieldId]}: RANGE - LIST: {value.range.low} -> {value.range.high}")
 
-        # if "prefix" in match_field:
         if "lpm" in match_field:
             value.prefix = InsertRequest.Value.LPM()
             value.prefix.value = get_hex_value(match_field["lpm"]["value"])
             value.prefix.prefix_len = match_field["lpm"]["prefixLen"]
             meta.dst_ip_addr = int(value.prefix.value, 16)      # for lookup during read request
-            print(f"* {keys[fieldId]}: LPM : {value.prefix.value} : {hex(value.prefix.prefix_len)} | type(value.prefix): {type(value.prefix)}")
+            py_log(None, f"* {keys[fieldId]}: LPM : {value.prefix.value} : {hex(value.prefix.prefix_len)}")
 
         if "range" in match_field:
-            print(f"range in match_field")
             value.range = InsertRequest.Value.Range()
-            print(f"value.range: {value.range}")
-            print(value.range.__dict__)
             value.range.low = get_hex_value(match_field["range"]["low"])
             value.range.high = get_hex_value(match_field["range"]["high"])
-            print(f"* {keys[fieldId]}: Range: {value.range.low} -> {value.range.high}")
+            py_log(None, f"* {keys[fieldId]}: Range: {value.range.low} -> {value.range.high}")
 
         insertRequest.values.append(value)
 
     insertRequest.priority = table_entry.get("priority", 0)
-    print(f"Priority: {insertRequest.priority}")
+    py_log("info", f"Priority: {insertRequest.priority}")
 
     # Action
     action_data = table_entry.get("action", {}).get("action", {})
-    # print(f"Action Data: {action_data}")
     insertRequest.action = action_data.get("actionId", None)
-    print(f"Action Data: {action_data} : {insertRequest.action}")
 
     if insertRequest.action is not None:
         action_name = get_action_name(insertRequest.action)
@@ -357,6 +345,6 @@ def parse_insert_request(json_obj):
             else:
                 hex_val = 0
             insertRequest.params.append(hex_val)
-        print(f"Action {insertRequest.action} : {action_name} {insertRequest.params}\n")
+        # py_log("info", f"Action {insertRequest.action} : {action_name} {insertRequest.params}\n")
 
     return insertRequest

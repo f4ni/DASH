@@ -14,9 +14,9 @@ table_entries = {}
 
 def pretty_print_proto(proto_msg, title="Protobuf Message"):
     json_str = json_format.MessageToJson(proto_msg, indent=2, sort_keys=True)
-    print(f"\n==== {title} ====")
-    print(json_str)
-    print("=" * 60 + "\n")
+    py_log(None, f"\n==== {title} ====")
+    py_log(None, json_str)
+    py_log(None, "=" * 60 + "\n")
     return json_str
 
 def populate_tables_actions_ids(json_data: str):
@@ -44,13 +44,6 @@ def populate_tables_actions_ids(json_data: str):
     counter_ids.update(extract_items(p4info.get("counters", [])))
     direct_counter_ids.update(extract_items(p4info.get("directCounters", [])))
 
-    # print("\nTables:", table_ids)
-    # print("\nActions:", action_ids)
-    # print("\nCounters:", counter_ids)
-    # print("\nDirect Counters:", direct_counter_ids)
-    # print("\naction_objs:", action_objs)
-    # print("\ntable_objs:", table_objs)
-
 class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
     def __init__(self):
         self.p4_pipeline_config = None
@@ -65,7 +58,7 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
             p4runtime_pb2.SetForwardingPipelineConfigRequest.VERIFY_AND_COMMIT,
             p4runtime_pb2.SetForwardingPipelineConfigRequest.COMMIT
         ):
-            print(f"Unsupported action: {request.action}")
+            py_log("error", f"Unsupported action: {request.action}")
             context.abort(
                 grpc.StatusCode.INVALID_ARGUMENT,
                 f"Unsupported action: {request.action}"
@@ -82,7 +75,7 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
         resp = p4runtime_pb2.GetForwardingPipelineConfigResponse()
 
         if not self.p4_pipeline_config:
-            print(f"[Write] Pipeline config not set")
+            py_log("error", f"Pipeline config not set")
             context.abort(grpc.StatusCode.NOT_FOUND, "Pipeline config not set")
 
         resp.config.CopyFrom(self.p4_pipeline_config)
@@ -99,10 +92,10 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                 obj_type = update_dict.get("type", {})
                 ret = table_insert_api(insert_request, obj_type)
                 if ret == RETURN_FAILURE:
-                    print(f"[Write] Entry already exists, skipping update [{idx}]")
+                    py_log("error", f"Entry already exists, skipping update [{idx}]")
                     context.abort(
                         grpc.StatusCode.ALREADY_EXISTS,
-                        f"[Write] Error processing update [{idx}]"
+                        f"Error processing update [{idx}]"
                     )
 
                 table_entry = update.entity.table_entry
@@ -121,10 +114,10 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                         if existing_entry.match == table_entry.match:
                             table_entries[table_id][i] = table_entry
                             replaced = True
-                            print(f"[Write] Modified entry in table {table_id}")
+                            py_log("info", f"Modified entry in table {table_id}")
                             break
                     if not replaced:
-                        print(f"[Write] Modify target not found, inserting instead")
+                        py_log("info", f"Modify target not found, inserting instead")
                         table_entries[table_id].append(table_entry)
 
                 elif obj_type == "DELETE":
@@ -136,13 +129,13 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                             removed = True
                             break
                     if not removed:
-                        print(f"[Write] Delete target not found in table {table_id}")
+                        py_log("info", f"Delete target not found in table {table_id}")
 
             except Exception as e:
-                print(f"[Write] Error processing update [{idx}]: {e}")
+                py_log("error", "Error processing update [{idx}]: {e}")
                 context.abort(
                     grpc.StatusCode.INVALID_ARGUMENT,
-                    f"[Write] Error processing update [{idx}]: {e}"
+                    f"Error processing update [{idx}]: {e}"
                 )
 
         return p4runtime_pb2.WriteResponse()
@@ -150,7 +143,7 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
     def Read(self, request, context):
         # pretty_print_proto(request, "Read Request")
         if not self.p4_pipeline_config:
-            print(f"[Read] Pipeline config not set")
+            py_log("error", f"Pipeline config not set")
             context.abort(grpc.StatusCode.FAILED_PRECONDITION, "Pipeline config not set")
 
         for entity in request.entities:
@@ -181,11 +174,10 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                             )
                             break
                 if not found:
-                    print(f"[Read] No matching entry found in table {table_id}")
+                    py_log("error", f"No matching entry found in table {table_id}")
 
     # Handles bi-directional communication (StreamChannel)
     def StreamChannel(self, request_iterator, context):
-        # print("Opened StreamChannel")
         for request in request_iterator:
             # pretty_print_proto(request, "StreamChannel Message")
 
@@ -201,11 +193,9 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                 response.arbitration.election_id.low = request.arbitration.election_id.low
                 response.arbitration.election_id.high = 0
                 response.arbitration.status.code = 0  # OK
-                # print(f"← Sending arbitration response (election_id={response.arbitration.election_id.low})\n\n")
                 yield response
 
             elif request.HasField("packet"):
-                # Example Packet-In handling (echo back)
                 packet_out = p4runtime_pb2.StreamMessageResponse()
                 packet_out.packet.payload = request.packet.payload
                 yield packet_out
@@ -219,12 +209,11 @@ def serve():
     p4runtime_pb2_grpc.add_P4RuntimeServicer_to_server(P4RuntimeServicer(), server)
     server.add_insecure_port("[::]:9559")
     server.start()
-    # print("P4Runtime gRPC server started on port 9559\n")
-    print("Server listening on 0.0.0.0:9559\n")
+    py_log(None, "Server listening on 0.0.0.0:9559\n")
 
     try:
         while True:
             time.sleep(86400)  # Keep the server alive
     except KeyboardInterrupt:
-        print("Shutting down gRPC server.\n")
+        py_log(None, "Shutting down gRPC server.\n")
         server.stop(0)

@@ -9,12 +9,16 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-def py_log(level, *args, **kwargs):
+def py_log(level=None, *args, **kwargs):
     # Format message (like print does)
     msg_parts = [str(arg) for arg in args]
     if kwargs:
         msg_parts.append(str(kwargs))
     message = " ".join(msg_parts)
+
+    if not level:
+        print(message)  # Default behavior
+        return
 
     level = level.lower()
     if level == "debug":
@@ -28,7 +32,7 @@ def py_log(level, *args, **kwargs):
     elif level == "critical":
         logging.critical(message, stacklevel=2)
     else:
-        logging.info(message, stacklevel=2)  # default
+        print(message)  # default
 
 def action(func, hints=None):
     aid = next(aid_gen)

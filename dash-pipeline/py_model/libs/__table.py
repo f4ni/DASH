@@ -1,6 +1,7 @@
 from inspect import *
 
 from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 from py_model.libs.__id_map import *
 
 class Entry:
@@ -52,18 +53,18 @@ class Entry:
 
 
 def EXACT(entry_value: int, match_value: int, width: int):
-    print(f"EXACT entry_value: {hex(entry_value)} | match_value: {hex(match_value)}\n")
+    py_log(None, f"EXACT entry_value: {hex(entry_value)} | match_value: {hex(match_value)}")
     return entry_value == match_value
 
 def TERNARY(entry_value: Entry.Ternary, match_value: int, width: int):
     value = entry_value.value
     mask = entry_value.mask
-    print(f"TERNARY match match_value: {hex(match_value)} | value: {hex(value)} | mask: {hex(mask)}\n")
+    py_log(None, f"TERNARY match match_value: {hex(match_value)} | value: {hex(value)} | mask: {hex(mask)}\n")
     return (value & mask) == (match_value & mask)
 
 def LIST(entry_value: list[Entry.Ternary], match_value: int, width: int):
     for ev in entry_value:
-        print(f"TERNARY LIST match ev: {(ev)} | match_value: {hex(match_value)}")
+        py_log(None, f"TERNARY LIST match ev: {(ev)} | match_value: {hex(match_value)}")
         if TERNARY(ev, match_value, width):
             return True
     return False
@@ -71,12 +72,12 @@ def LIST(entry_value: list[Entry.Ternary], match_value: int, width: int):
 def RANGE(entry_value: Entry.Range, match_value: int, width: int):
     low = entry_value.low
     high = entry_value.high
-    print(f"RANGE match match_value: {match_value} | low: {low} | high: {high}\n")
+    py_log(None, f"RANGE match match_value: {match_value} | low: {low} | high: {high}\n")
     return match_value >= low and match_value <= high
 
 def RANGE_LIST(entry_value: list[Entry.Range], match_value, width):
     for ev in entry_value:
-        print(f"RANGE LIST match ev: {ev} | match_value: {match_value}\n")
+        py_log(None, f"RANGE LIST match ev: {ev} | match_value: {match_value}\n")
         if RANGE(ev, match_value, width):
             return True
     return False
@@ -85,7 +86,7 @@ def LPM(entry_value: Entry.LPM, match_value: int, width: int):
     value = entry_value.value
     prefix_len = entry_value.prefix_len
     mask = ((1 << prefix_len) - 1) << (width - prefix_len)
-    print(f"LPM match match_value: {hex(match_value)} | value: {hex(value)} | mask: {hex(mask)} | prefix_len: {hex(prefix_len)}\n")
+    py_log(None, f"LPM match match_value: {hex(match_value)} | value: {hex(value)} | mask: {hex(mask)} | prefix_len: {hex(prefix_len)}\n")
     return (value & mask) == (match_value & mask)
 
 def _winning_criteria_PRIORITY(a: Entry, b: Entry, key):
@@ -206,16 +207,15 @@ class Table:
         for idx, e in enumerate(self.entries):
             if e.values == entry.values:
                 self.entries[idx] = entry
-                print(f"Entry modified: {entry}")
+                py_log("info", f"Entry modified: {entry}")
                 return
 
     def delete(self, entry):
         for e in self.entries:
             if e.values == entry.values:
-                # print("Entry found for deleting +++")
                 self.entries.remove(e)
-                return
-        # print("Entry NOT found ---\n\n")
+                return RETURN_SUCCESS
+        return RETURN_FAILURE
 
     def apply(self):
         entry = self.__lookup()
@@ -223,14 +223,14 @@ class Table:
         if entry is None:
             action = self.default_action or self.const_default_action
             params = self.default_params
-            print(f"Match NOT found -> action: {action}\n")
+            py_log("info", f"Match NOT FOUND | Action: {action.__name__}{params}\n")
             action(*params)
             res["hit"] = False
             res["action_run"] = action
         else:
             action = entry.action
             params = entry.params
-            print(f"Match FOUND -> action: {action}, params = {params}\n")
+            py_log("info", f"Match FOUND | Action: {action.__name__}{params}\n")
             action(*params)
             res["hit"] = True
             res["action_run"] = action
@@ -238,11 +238,8 @@ class Table:
 
     def __match_entry(self, entry: Entry):
         idx = 0
-        # print(f"entry_type = {type(entry.values)} | len_entry = {len(entry.values)}")
-
         for k in self.key:
             if idx < len(entry.values):
-                # print(f"-> Match Key: {k}")
                 _read_value_res = _read_value(k)
                 match_value = _read_value_res[0]
                 width = _read_value_res[1]
@@ -289,15 +286,12 @@ class Table:
 
     def __get_all_matching_entries(self):
         matching_entries = []
-        # print(f"Match_Entries = {list(self.entries)}")
         for e in self.entries:
-            # print(f"matching entry = {e}")
             if self.__match_entry(e):
                 matching_entries.append(e)
         return matching_entries
 
     def __get_winning_criteria(self):
-        # print(f"self.key = {self.key}")
         for k in self.key:
             if self.key[k]==LPM:
                 return _winning_criteria_PREFIX_LEN
@@ -307,7 +301,6 @@ class Table:
         return None
 
     def __select_winning_entry(self, matching_entries):
-        # print(f"matching_entries = {list(matching_entries)}")
         winning_criteria = self.__get_winning_criteria()
         curr_winner = matching_entries[0]
         for e in matching_entries[1:]:
