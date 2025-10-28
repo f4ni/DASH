@@ -43,6 +43,7 @@ remove_container() {
 case "$1" in
     # --- Core Run Targets ---
     pymodel)
+        clear
         echo "Running Python Model with DPAPP..."
         # sudo make network HAVE_DPAPP=y
         remove_container "pymodel_dash"
@@ -50,6 +51,7 @@ case "$1" in
         ;;
 
     bmv2)
+        clear
         echo "Running BMv2 model with DPAPP..."
         make network HAVE_DPAPP=y
         remove_container "simple_switch"
@@ -57,17 +59,20 @@ case "$1" in
         ;;
 
     saiserver)
+        clear
         echo "Running SAI Thrift Server..."
         remove_container "dash-saithrift-server"
         sudo make run-saithrift-server
         ;;
 
     dpapp)
+        clear
         echo "Running DPAPP..."
         sudo make run-dpapp
         ;;
 
     ptftest)
+        clear
         echo "Running PTF Tests..."
         sudo make docker-saithrift-client
         sudo make run-saithrift-ptftests
@@ -75,6 +80,7 @@ case "$1" in
 
     # --- Build Targets ---
     bmv2-build)
+        clear
         echo "Building BMv2 DASH..."
         git submodule update --init
         # sudo chown -R "${USER}:${USER}" .
@@ -94,6 +100,7 @@ case "$1" in
         ;;
 
     pymodel-build)
+        clear
         echo "Building Python model DASH..."
         sudo chown -R "${USER}:${USER}" .
         sudo make py-artifacts docker-saithrift-bldr
@@ -105,22 +112,27 @@ case "$1" in
 
     # --- Clean Targets ---
     py-clean)
+        clear
         echo "Cleaning Python model artifacts..."
         make py-artifacts-clean
         ;;
 
     sai-clean)
+        clear
         echo "Cleaning SAI headers..."
         sudo chown -R "${USER}:${USER}" .
         sudo make sai-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
         ;;
 
     sai-server-clean)
+        clear
         echo "Cleaning SAI Thrift Server..."
+        sudo chown -R "${USER}:${USER}" .
         sudo make saithrift-server-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
         ;;
 
     kill)
+        clear
         echo "Killing all containers and processes..."
         sudo make kill-all
         sudo make kill-dpapp || true

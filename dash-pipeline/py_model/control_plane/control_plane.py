@@ -123,7 +123,6 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
         match_type = key_format[idx]
 
         if match_type is EXACT:
-            # py_log("info", f"EXACT | value: {val.exact}")
             entry.values.append(val.exact)
 
         elif match_type is TERNARY:
@@ -255,8 +254,8 @@ def parse_insert_request(json_obj):
 
     # Extract table entry information
     req_type = json_obj.get("type", {})
-    py_log(f"\nReceived request: {req_type}")
-    py_log("=" * 25)
+    py_log(None, f"\nReceived request: {req_type}")
+    py_log(None, "=" * 25)
 
     table_entry = json_obj.get("entity", {}).get("tableEntry", {})
 
