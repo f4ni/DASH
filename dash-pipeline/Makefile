@@ -436,7 +436,7 @@ libsai-test: SAI/lib/libsai.so
 	$(DOCKER_RUN) \
 	    --name dash-build-test-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
-		-w /tests/libsai  $(MODEL_BLDR_IMG) \
+		-w /tests/libsai  $(DOCKER_BMV2_BLDR_IMG) \
 	    make
 
 timeout?=5
