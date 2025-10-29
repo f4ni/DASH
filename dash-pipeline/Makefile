@@ -112,6 +112,7 @@ DOCKER_RUN := docker run \
 # Should override --name in make targets
 DOCKER_PY_RUN := docker run \
 	-v $(PWD)/py_model:/py_model \
+	-v $(PWD)/SAI:/SAI \
 	--network=host \
 	--rm \
 	-u $(HOST_USER):$(HOST_GROUP) \
@@ -271,9 +272,11 @@ DOCKER_RUN_SAITHRIFT_BLDR =\
 sai: sai-headers sai-meta libsai
 
 ifeq ($(TARGET),pymodel)
-SAI_HEADERS_DEPS := py-artifacts docker-saithrift-bldr-image-exists
+  SAI_HEADERS_DEPS := docker-saithrift-bldr-image-exists
+  DOCKER_RUN_CMD := $(DOCKER_PY_RUN)
 else
-SAI_HEADERS_DEPS := p4 docker-saithrift-bldr-image-exists
+  SAI_HEADERS_DEPS := p4 docker-saithrift-bldr-image-exists
+  DOCKER_RUN_CMD := $(DOCKER_RUN)
 endif
 
 sai-headers: $(SAI_HEADERS_DEPS) | SAI/SAI
@@ -285,8 +288,7 @@ sai-headers: $(SAI_HEADERS_DEPS) | SAI/SAI
 
 	mkdir -p SAI/lib
 
-	$(DOCKER_RUN) \
-		$(DOCKER_FLAGS) \
+	$(DOCKER_RUN_CMD) \
 		--name build_sai-$(USER) \
 		-u $(HOST_USER):$(HOST_GROUP) \
 		-w /SAI $(DOCKER_SAITHRIFT_BLDR_IMG) \
