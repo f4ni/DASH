@@ -88,7 +88,14 @@ DOCKER_RUN := docker run \
 	-v $(PWD)/bmv2:/bmv2 \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/py_model:/py_model \
-	-v $(PWD)/tests:/tests \
+	-v $(PWD)/tests:/tests \lish
+	--network=host \
+	--rm \
+	-u $(HOST_USER):$(HOST_GROUP) \
+	$(DOCKER_FLAGS)
+
+DOCKER_PY_RUN := docker run \
+	-v $(PWD)/py_model:/py_model \
 	--network=host \
 	--rm \
 	-u $(HOST_USER):$(HOST_GROUP) \
@@ -136,14 +143,11 @@ pymodel:
 
 .PHONY:run-pymodel
 run-pymodel: network
-	$(DOCKER_RUN) \
+	$(DOCKER_PY_RUN) \
 		-it \
 		--name pymodel-$(USER) \
 		-u root \
-		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
 		$(DOCKER_PYMODEL_RUN_IMG) \
-		env LD_LIBRARY_PATH=/usr/local/lib \
 		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK) 
 	
 kill-pymodel:
@@ -501,6 +505,11 @@ docker-pymodel-bldr:
 		docker tag $(DOCKER_PYMODEL_BLDR_IMG) \
 		$(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG)
 
+docker-publish-pymodel-bldr:
+	@echo "Publish $(DOCKER_PYMODEL_BLDR_IMG) - requires credentials, can only do from DASH repo, not a fork"
+	docker push $(DOCKER_PYMODEL_BLDR_IMG)
+	[ -n $(DOCKER_PYMODEL_BLDR_IMG_CTAG) ] && \
+		docker push $(DOCKER_PYMODEL_BLDR_IMG_NAME):$(DOCKER_PYMODEL_BLDR_IMG_CTAG)
 
 ###############################
 # DOCKER BUILD/PUBLISH TARGETS
