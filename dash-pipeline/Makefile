@@ -94,8 +94,15 @@ DOCKER_FLAGS ?=-it
 DOCKER_RUN := docker run \
 	-v $(PWD)/bmv2:/bmv2 \
 	-v $(PWD)/SAI:/SAI \
-	-v $(PWD)/py_model:/py_model \
 	-v $(PWD)/tests:/tests \
+	--network=host \
+	--rm \
+	-u $(HOST_USER):$(HOST_GROUP) \
+	$(DOCKER_FLAGS)
+
+# Should override --name in make targets
+DOCKER_PY_RUN := docker run \
+	-v $(PWD)/py_model:/py_model \
 	--network=host \
 	--rm \
 	-u $(HOST_USER):$(HOST_GROUP) \
@@ -103,13 +110,6 @@ DOCKER_RUN := docker run \
 
 SHA1SUM := sha1sum | awk '{print substr($$1,0,11);}'
 
-ifeq ($(TARGET),bmv2)
-  MODEL_BLDR_IMG := $(DOCKER_BMV2_BLDR_IMG)
-else ifeq ($(TARGET),pymodel)
-  MODEL_BLDR_IMG := $(DOCKER_PYMODEL_BLDR_IMG)
-else
-  $(error Invalid TARGET '$(TARGET)'. Must be 'bmv2' or 'pymodel')
-endif
 
 SAI/SAI: sai-submodule
 
@@ -118,6 +118,51 @@ sai-submodule:
 	git submodule update --init
 	@echo "Initializing SAI submodule..."
 	cd SAI/SAI/test && git submodule update --init ptf
+
+
+#######################################
+# Pymodel DOCKER BUILD/PUBLISH TARGETS
+#######################################
+# Include environment variables
+include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
+
+# Default hash utility (portable)
+SHA1SUM ?= sha1sum
+
+# Compute image tag (optional; currently unused but kept for reference)
+DOCKER_PYMODEL_IMG_TAG := $(shell cat dockerfiles/Dockerfile.pymodel-bldr | $(SHA1SUM) | cut -d' ' -f1)
+
+# Compose full image name (no hash tag — building locally only)
+DOCKER_PYMODEL_BLDR_IMG := $(DOCKER_PYMODEL_IMG_NAME)
+
+# Optionally, runtime image (defaults to same as builder)
+DOCKER_PYMODEL_RUN_IMG ?= $(DOCKER_PYMODEL_BLDR_IMG)
+
+# Docker build target (local only, no pulls)
+docker-pymodel-bldr:
+	@echo "Building local PyModel image: $(DOCKER_PYMODEL_BLDR_IMG)"
+	docker build --no-cache \
+		-f dockerfiles/Dockerfile.pymodel-bldr \
+	    -t $(DOCKER_PYMODEL_BLDR_IMG) \
+	    --build-arg user=$(DASH_USER) \
+	    --build-arg group=$(DASH_GROUP) \
+	    --build-arg uid=$(DASH_UID) \
+	    --build-arg guid=$(DASH_GUID) \
+	    --build-arg hostname=$(DASH_HOST) \
+	    --build-arg available_processors=$(shell nproc) \
+	    .
+	@if [ -n "$(DOCKER_PYMODEL_IMG_CTAG)" ]; then \
+	    echo "Tagging image as $(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG)"; \
+	    docker tag $(DOCKER_PYMODEL_BLDR_IMG) $(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG); \
+	fi
+
+
+docker-publish-pymodel-bldr:
+	@echo "Publish $(DOCKER_PYMODEL_BLDR_IMG) - requires credentials, can only do from DASH repo, not a fork"
+	docker push $(DOCKER_PYMODEL_BLDR_IMG)
+	[ -n $(DOCKER_PYMODEL_IMG_CTAG) ] && \
+		docker push $(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG)
+
 
 
 #######################
@@ -139,24 +184,16 @@ pymodel:
 	@echo "Running pymodel..."
 	make network $(if $(filter y,$(HAVE_DPAPP)),HAVE_DPAPP=y)
 	python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
-	
-
 
 .PHONY:run-pymodel
 run-pymodel: network
-	$(DOCKER_RUN) \
-		-it \
-		--name pymodel-$(USER) \
-		-u root \
-		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-		-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
+	$(DOCKER_PY_RUN) \
+		--name dash-pymodel-$(USER) \
 		$(DOCKER_PYMODEL_RUN_IMG) \
-		env LD_LIBRARY_PATH=/usr/local/lib \
 		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK) 
 	
 kill-pymodel:
-	-docker kill pymodel-$(USER)
-
+	-docker kill dash-pymodel-$(USER)
 
 
 ######################################
@@ -489,35 +526,6 @@ init-switch:
 		fi; \
 	done; \
 	docker exec -w /tests/libsai/init_switch simple_switch-$(USER) ./init_switch
-
-####################################
-# BMv2 DOCKER BUILD/PUBLISH TARGETS
-####################################
-
-include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
-
-DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
-
-DOCKER_PYMODEL_IMG_TAG = $(shell cat py_model/container/Dockerfile.pymodel | $(SHA1SUM))
-DOCKER_PYMODEL_BLDR_IMG = $(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_TAG)
-
-docker-pymodel-bldr:
-	{ [ x$(ENABLE_DOCKER_PULL) == xy ] && docker pull $(DOCKER_PYMODEL_BLDR_IMG); } || \
-	docker build \
-		-f dockerfiles/Dockerfile.pymodel-bldr \
-		--target builder \
-	    -t $(DOCKER_PYMODEL_BLDR_IMG) \
-	    --build-arg user=$(DASH_USER) \
-	    --build-arg group=$(DASH_GROUP) \
-	    --build-arg uid=$(DASH_UID) \
-	    --build-arg guid=$(DASH_GUID) \
-	    --build-arg hostname=$(DASH_HOST) \
-	    --build-arg available_processors=$(shell nproc) \
-	    . 
-	[ -n $(DOCKER_PYMODEL_IMG_CTAG) ] && \
-		docker tag $(DOCKER_PYMODEL_BLDR_IMG) \
-		$(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG)
-
 
 ###############################
 # DOCKER BUILD/PUBLISH TARGETS

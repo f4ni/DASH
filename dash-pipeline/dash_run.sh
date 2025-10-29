@@ -47,7 +47,7 @@ case "$1" in
         echo "Running Python Model with DPAPP..."
         # sudo make network HAVE_DPAPP=y
         remove_container "pymodel_dash"
-        sudo make pymodel HAVE_DPAPP=y
+        sudo make run-pymodel HAVE_DPAPP=y
         ;;
 
     bmv2)
@@ -136,7 +136,7 @@ case "$1" in
         echo "Killing all containers and processes..."
         sudo make kill-all
         sudo make kill-dpapp || true
-        sudo pkill -f main_dash.py || true
+        sudo make kill-pymodel || true
         ;;
 
     *)
