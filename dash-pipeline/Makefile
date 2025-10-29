@@ -60,10 +60,19 @@ DOCKER_BMV2_RUN_IMG ?=$(DOCKER_BMV2_BLDR_IMG)
 
 # Builds sai-P4rt clients to run inside pymodel process
 # include file defines DOCKER_PYMODEL_BLDR_IMG_NAME and DOCKER_PYMODEL_BLDR_IMG_CTAG
-# include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
+include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
+
+# Default hash utility (portable)
+SHA1SUM ?= sha1sum
+
+# Compute image tag (optional; currently unused but kept for reference)
+DOCKER_PYMODEL_IMG_TAG := $(shell cat dockerfiles/Dockerfile.pymodel-bldr | $(SHA1SUM) | cut -d' ' -f1)
+
+# Compose full image name (no hash tag — building locally only)
+DOCKER_PYMODEL_BLDR_IMG := $(DOCKER_PYMODEL_IMG_NAME)
 
 # Runs pymodel process - consider slimmer if don't need sai/p4rt clients inside
-# DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
+DOCKER_PYMODEL_RUN_IMG ?=$(DOCKER_PYMODEL_BLDR_IMG)
 
 # Compiles sai headers, libsai, saithrift server & client/server libs
 # include file defines DOCKER_SAITHRIFT_BLDR_IMG_NAME and DOCKER_SAITHRIFT_BLDR_IMG_CTAG
@@ -123,20 +132,6 @@ sai-submodule:
 #######################################
 # Pymodel DOCKER BUILD/PUBLISH TARGETS
 #######################################
-# Include environment variables
-include dockerfiles/DOCKER_PYMODEL_BLDR_IMG.env
-
-# Default hash utility (portable)
-SHA1SUM ?= sha1sum
-
-# Compute image tag (optional; currently unused but kept for reference)
-DOCKER_PYMODEL_IMG_TAG := $(shell cat dockerfiles/Dockerfile.pymodel-bldr | $(SHA1SUM) | cut -d' ' -f1)
-
-# Compose full image name (no hash tag — building locally only)
-DOCKER_PYMODEL_BLDR_IMG := $(DOCKER_PYMODEL_IMG_NAME)
-
-# Optionally, runtime image (defaults to same as builder)
-DOCKER_PYMODEL_RUN_IMG ?= $(DOCKER_PYMODEL_BLDR_IMG)
 
 # Docker build target (local only, no pulls)
 docker-pymodel-bldr:
@@ -178,12 +173,6 @@ py-artifacts:
 
 py-artifacts-clean:
 	rm -rf $(PY_OUTDIR)
-
-.PHONY: pymodel
-pymodel:
-	@echo "Running pymodel..."
-	make network $(if $(filter y,$(HAVE_DPAPP)),HAVE_DPAPP=y)
-	python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK)
 
 .PHONY:run-pymodel
 run-pymodel: network
