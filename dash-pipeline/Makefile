@@ -270,7 +270,13 @@ DOCKER_RUN_SAITHRIFT_BLDR =\
 .PHONY:sai
 sai: sai-headers sai-meta libsai
 
-sai-headers: p4 docker-saithrift-bldr-image-exists | SAI/SAI
+ifeq ($(TARGET),pymodel)
+SAI_HEADERS_DEPS := py-artifacts docker-saithrift-bldr-image-exists
+else
+SAI_HEADERS_DEPS := p4 docker-saithrift-bldr-image-exists
+endif
+
+sai-headers: $(SAI_HEADERS_DEPS) | SAI/SAI
 	@echo "Generate SAI library headers and implementation..."
 
 	# Revert any local changes before generating the new specs.
