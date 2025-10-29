@@ -66,6 +66,8 @@ jobs:
       run:  git submodule update --init
     - name: Pull/Build docker saithrift-bldr image
       run:  make docker-saithrift-bldr
+    - name: Pull/Build docker pymodel-bldr image
+      run:  make docker-pymodel-bldr
     - name: Generate SAI API
       run:  DOCKER_FLAGS=$docker_fg_flags make sai TARGET=pymodel
     - name: Pull/Build docker dpapp image

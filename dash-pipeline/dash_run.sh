@@ -104,6 +104,7 @@ case "$1" in
         echo "Building Python model DASH..."
         sudo chown -R "${USER}:${USER}" .
         sudo make py-artifacts docker-saithrift-bldr
+        sudo make docker-pymodel-bldr
         sudo make sai TARGET=pymodel
         sudo make docker-dash-dpapp dpapp check-sai-spec
         sudo make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
