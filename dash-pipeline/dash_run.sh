@@ -58,17 +58,30 @@ case "$1" in
         sudo make run-switch HAVE_DPAPP=y
         ;;
 
-    saiserver)
+    bmv2-saiserver)
         clear
-        echo "Running SAI Thrift Server..."
+        echo "Running SAI Thrift Server for bmv2..."
         remove_container "dash-saithrift-server"
         sudo make run-saithrift-server
         ;;
 
-    dpapp)
+    py-saiserver)
         clear
-        echo "Running DPAPP..."
+        echo "Running SAI Thrift Server for pymodel..."
+        remove_container "dash-saithrift-server"
+        sudo make run-saithrift-server TARGET=pymodel
+        ;;
+
+    bmv2-dpapp)
+        clear
+        echo "Running DPAPP for bmv2..."
         sudo make run-dpapp
+        ;;
+
+    py-dpapp)
+        clear
+        echo "Running DPAPP for pymodel..."
+        sudo make run-dpapp TARGET=pymodel
         ;;
 
     ptftest)
@@ -83,12 +96,6 @@ case "$1" in
         clear
         echo "Building BMv2 DASH..."
         git submodule update --init
-        # sudo chown -R "${USER}:${USER}" .
-        # sudo make docker-dash-p4c p4 docker-saithrift-bldr docker-bmv2-bldr \
-        #      sai docker-dash-dpapp dpapp check-sai-spec \
-        #      saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g) \
-        #      docker-saithrift-client
-
         sudo chown -R "${USER}:${USER}" .
         sudo make docker-dash-p4c p4
         sudo make docker-saithrift-bldr

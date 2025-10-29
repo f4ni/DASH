@@ -96,6 +96,22 @@ DOCKER_SAI_CHALLENGER_CLIENT_IMG ?= local/dash-saichallenger-client:latest
 # include file defines DOCKER_DPAPP_IMG
 include dockerfiles/DOCKER_DPAPP_IMG.env
 
+ifeq ($(TARGET), pymodel)
+MODEL_DIR = \
+	-v $(PWD)/py_model:/py_model \
+
+PIPELINE_MOUNTS = \
+	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
+else
+MODEL_DIR = \
+	-v $(PWD)/bmv2:/bmv2 \
+
+PIPELINE_MOUNTS = \
+	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
+endif
+
 # Set differently in CI scripts as needed, e.g. run switch container in -d mode
 DOCKER_FLAGS ?=-it
 
@@ -113,6 +129,7 @@ DOCKER_RUN := docker run \
 DOCKER_PY_RUN := docker run \
 	-v $(PWD)/py_model:/py_model \
 	-v $(PWD)/SAI:/SAI \
+	-v $(PWD)/tests:/tests \
 	--network=host \
 	--rm \
 	-u $(HOST_USER):$(HOST_GROUP) \
@@ -158,7 +175,6 @@ docker-publish-pymodel-bldr:
 	docker push $(DOCKER_PYMODEL_BLDR_IMG)
 	[ -n $(DOCKER_PYMODEL_IMG_CTAG) ] && \
 		docker push $(DOCKER_PYMODEL_IMG_NAME):$(DOCKER_PYMODEL_IMG_CTAG)
-
 
 
 #######################
@@ -356,11 +372,11 @@ run-saithrift-bldr-bash:
 	    /bin/bash
 
 ######################################
-# bmv2 date-plane app TARGETS
+# date-plane app TARGETS
 ######################################
 DOCKER_RUN_DPAPP = docker run\
 	$(DOCKER_FLAGS) \
-	-v $(PWD)/bmv2:/bmv2 \
+	$(MODEL_DIR) \
 	$(PIPELINE_MOUNTS) \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/tests:/tests \
@@ -432,15 +448,6 @@ kill-switch:
 saithrift-server: docker-saithrift-bldr-image-exists
 	$(DOCKER_RUN_SAITHRIFT_BLDR) \
 	    make $@
-
-ifeq ($(TARGET), py_model)
-PIPELINE_MOUNTS = \
-	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
-else
-PIPELINE_MOUNTS = \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
-endif
 
 DOCKER_RUN_SAITHRIFT_SRVR =\
 	docker run \
