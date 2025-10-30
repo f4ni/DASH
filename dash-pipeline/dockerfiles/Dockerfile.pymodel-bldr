@@ -1,7 +1,10 @@
-# Use lightweight official Python image
-FROM python:3.12-slim AS base
+# DASH Python Environment with gRPC — based on amd64/ubuntu:24.04
 
-# Set timezone and environment
+FROM amd64/ubuntu:24.04 AS base
+LABEL maintainer="Farhan"
+LABEL description="DASH Python 3.12 environment with gRPC and dependencies"
+
+# Environment setup
 ARG TZ=America/Los_Angeles
 ENV TZ=${TZ} \
     DEBIAN_FRONTEND=noninteractive \
@@ -9,29 +12,46 @@ ENV TZ=${TZ} \
     PYTHONDONTWRITEBYTECODE=1 \
     GIT_SSL_NO_VERIFY=true
 
-# System dependencies (only what’s needed)
-RUN apt-get update && \
+# Install Python 3.12 (native in 24.04) + dependencies
+RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
         python3 \
         python3-pip \
         python3-venv \
         python3-dev \
+        build-essential \
         libpcap-dev \
-        gcc && \
+        git \
+        curl \
+        gcc \
+        g++ \
+        make \
+        pkg-config \
+        libssl-dev \
+        libffi-dev \
+        autoconf \
+        libtool \
+        ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python packages
-RUN python3 -m pip install --no-cache-dir \
-    scapy \
-    grpcio \
-    bitarray \
-    openpyxl \
-    cerberus \
-    python-docx \
-    google-cloud-storage \
-    protobuf==3.20.* \
-    googleapis-common-protos \
-    packaging
+# Install Python packages inside a virtual environment
+RUN python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        scapy \
+        grpcio \
+        bitarray \
+        openpyxl \
+        cerberus \
+        python-docx \
+        google-cloud-storage \
+        protobuf==3.20.* \
+        googleapis-common-protos \
+        packaging
+
+# Make sure Python inside venv is default
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Create non-root user
 ARG user=dashuser
@@ -43,6 +63,7 @@ RUN groupadd -g ${guid} ${group} && \
 
 USER ${user}
 WORKDIR /
+
 # Copy project
 COPY --chown=${user}:${group} py_model /py_model
 
