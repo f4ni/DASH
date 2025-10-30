@@ -87,14 +87,26 @@ jobs:
       run:  DOCKER_FLAGS=$docker_fg_flags make saithrift-server
     - name: Generate saithrift-client local docker
       run:  DOCKER_FLAGS=$docker_fg_flags make docker-saithrift-client
-    - name: Run saithrift server
-      run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server
+    # - name: Run saithrift server
+    #   run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
+    - name: Run saithrift server and stream logs
+      run: |
+        # Start the container in detached mode (without --rm so it persists for log inspection)
+        DOCKER_FLAGS="--privileged -d --net=host --name dash-saithrift-server-runner" \
+        make run-saithrift-server TARGET=pymodel
 
-    - name: Wait for saithrift to start
-      run: sleep 10
+        # Get the container ID for the started instance
+        cid=$(docker ps -q --filter "name=dash-saithrift-server-runner")
+        echo "Container ID: $cid"
 
-    - name: Logs of dash-saithrift-server-runner
-      run: docker logs dash-saithrift-server-runner
+        # Stream logs for 10 seconds to debug startup
+        echo "Streaming saithrift server logs for 10 seconds..."
+        timeout 10 docker logs -f $cid || true
+
+        # Show final container status
+        echo "Final container state:"
+        docker ps -a --filter "name=dash-saithrift-server-runner" || true
+
 
     - name: Run PTF Tests
       run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests
