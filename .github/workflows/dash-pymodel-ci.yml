@@ -92,8 +92,7 @@ jobs:
     - name: Run saithrift server and stream logs
       run: |
         # Start the container in detached mode (without --rm so it persists for log inspection)
-        DOCKER_FLAGS="--privileged -d --net=host --name dash-saithrift-server-runner" \
-        make run-saithrift-server TARGET=pymodel
+        DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
 
         # Get the container ID for the started instance
         cid=$(docker ps -q --filter "name=dash-saithrift-server-runner")
