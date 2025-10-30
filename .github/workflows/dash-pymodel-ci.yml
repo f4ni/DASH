@@ -71,18 +71,18 @@ jobs:
       run:  make docker-pymodel-bldr
     - name: Generate SAI API
       run:  DOCKER_FLAGS=$docker_fg_flags make sai TARGET=pymodel
-    # - name: Pull/Build docker dpapp image
-    #   run:  make docker-dash-dpapp
-    # - name: Build dpapp
-    #   run:  DOCKER_FLAGS=$docker_fg_flags make dpapp
+    - name: Pull/Build docker dpapp image
+      run:  make docker-dash-dpapp
+    - name: Build dpapp
+      run:  DOCKER_FLAGS=$docker_fg_flags make dpapp
     - name: Run pymodel
       run:  DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
-    # - name: Check if SAI spec is updated
-    #   run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
+    - name: Check if SAI spec is updated
+      run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
     - name: Prepare network
       run:  DOCKER_FLAGS=$docker_fg_flags make network HAVE_DPAPP=y
-    # - name: Run dpapp
-    #   run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp HAVE_DPAPP=y TARGET=pymodel
+    - name: Run dpapp
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
     - name: Generate saithrift-server
       run:  DOCKER_FLAGS=$docker_fg_flags make saithrift-server
     - name: Generate saithrift-client local docker
@@ -101,11 +101,6 @@ jobs:
         # Stream logs for 10 seconds to debug startup
         echo "Streaming saithrift server logs for 10 seconds..."
         timeout 10 docker logs -f $cid || true
-
-        # Show final container status
-        echo "Final container state:"
-        docker ps -a --filter "name=dash-saithrift-server-runner" || true
-
 
     - name: Run PTF Tests
       run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests

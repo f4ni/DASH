@@ -96,22 +96,6 @@ DOCKER_SAI_CHALLENGER_CLIENT_IMG ?= local/dash-saichallenger-client:latest
 # include file defines DOCKER_DPAPP_IMG
 include dockerfiles/DOCKER_DPAPP_IMG.env
 
-ifeq ($(TARGET), pymodel)
-MODEL_DIR = \
-	-v $(PWD)/py_model:/py_model \
-
-PIPELINE_MOUNTS = \
-	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
-else
-MODEL_DIR = \
-	-v $(PWD)/bmv2:/bmv2 \
-
-PIPELINE_MOUNTS = \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
-endif
-
 # Set differently in CI scripts as needed, e.g. run switch container in -d mode
 DOCKER_FLAGS ?=-it
 
@@ -137,6 +121,28 @@ DOCKER_PY_RUN := docker run \
 
 SHA1SUM := sha1sum | awk '{print substr($$1,0,11);}'
 
+
+ifeq ($(TARGET), pymodel)
+MODEL_DIR = \
+	-v $(PWD)/py_model:/py_model \
+
+SAI_HEADERS_DEPS := docker-saithrift-bldr-image-exists
+DOCKER_RUN_CMD := $(DOCKER_PY_RUN)
+
+PIPELINE_MOUNTS = \
+	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+	-v $(PWD)/$(PY_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
+else
+MODEL_DIR = \
+	-v $(PWD)/bmv2:/bmv2 \
+
+SAI_HEADERS_DEPS := p4 docker-saithrift-bldr-image-exists
+DOCKER_RUN_CMD := $(DOCKER_RUN)
+
+PIPELINE_MOUNTS = \
+	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt
+endif
 
 SAI/SAI: sai-submodule
 
@@ -286,14 +292,6 @@ DOCKER_RUN_SAITHRIFT_BLDR =\
 # TODO - create separate rules for headers, libsai.so
 .PHONY:sai
 sai: sai-headers sai-meta libsai
-
-ifeq ($(TARGET),pymodel)
-  SAI_HEADERS_DEPS := docker-saithrift-bldr-image-exists
-  DOCKER_RUN_CMD := $(DOCKER_PY_RUN)
-else
-  SAI_HEADERS_DEPS := p4 docker-saithrift-bldr-image-exists
-  DOCKER_RUN_CMD := $(DOCKER_RUN)
-endif
 
 sai-headers: $(SAI_HEADERS_DEPS) | SAI/SAI
 	@echo "Generate SAI library headers and implementation..."
