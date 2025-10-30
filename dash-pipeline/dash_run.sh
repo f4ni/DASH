@@ -41,14 +41,60 @@ remove_container() {
 }
 
 case "$1" in
-    # --- Core Run Targets ---
+
+    sai-clean)
+        clear
+        echo "Cleaning SAI headers..."
+        sudo chown -R "${USER}:${USER}" .
+        sudo make sai-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+        ;;
+
+    sai-server-clean)
+        clear
+        echo "Cleaning SAI Thrift Server..."
+        sudo chown -R "${USER}:${USER}" .
+        sudo make saithrift-server-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+        ;;
+
+    py-clean)
+        clear
+        echo "Cleaning Python model artifacts..."
+        make py-artifacts-clean
+        ;;
+
+    py-build)
+        clear
+        echo "Building Python model DASH..."
+        sudo chown -R "${USER}:${USER}" .
+        sudo make py-artifacts docker-saithrift-bldr
+        sudo make docker-pymodel-bldr
+        sudo make sai TARGET=pymodel
+        sudo make docker-dash-dpapp dpapp TARGET=pymodel
+        sudo make check-sai-spec
+        sudo make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+        sudo make docker-saithrift-client
+        ;;
+
     pymodel)
         clear
         echo "Running Python Model with DPAPP..."
-        # sudo make network HAVE_DPAPP=y
         remove_container "pymodel_dash"
         sudo make run-pymodel HAVE_DPAPP=y
         ;;
+
+    py-dpapp)
+        clear
+        echo "Running DPAPP for pymodel..."
+        sudo make run-dpapp TARGET=pymodel
+        ;;
+
+    py-saiserver)
+        clear
+        echo "Running SAI Thrift Server for pymodel..."
+        remove_container "dash-saithrift-server"
+        sudo make run-saithrift-server TARGET=pymodel
+        ;;
+
 
     bmv2)
         clear
@@ -65,23 +111,10 @@ case "$1" in
         sudo make run-saithrift-server
         ;;
 
-    py-saiserver)
-        clear
-        echo "Running SAI Thrift Server for pymodel..."
-        remove_container "dash-saithrift-server"
-        sudo make run-saithrift-server TARGET=pymodel
-        ;;
-
     bmv2-dpapp)
         clear
         echo "Running DPAPP for bmv2..."
         sudo make run-dpapp
-        ;;
-
-    py-dpapp)
-        clear
-        echo "Running DPAPP for pymodel..."
-        sudo make run-dpapp TARGET=pymodel
         ;;
 
     ptftest)
@@ -91,7 +124,6 @@ case "$1" in
         sudo make run-saithrift-ptftests
         ;;
 
-    # --- Build Targets ---
     bmv2-build)
         clear
         echo "Building BMv2 DASH..."
@@ -104,39 +136,6 @@ case "$1" in
         sudo make docker-dash-dpapp dpapp check-sai-spec
         sudo make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
         sudo make docker-saithrift-client
-        ;;
-
-    pymodel-build)
-        clear
-        echo "Building Python model DASH..."
-        sudo chown -R "${USER}:${USER}" .
-        sudo make py-artifacts docker-saithrift-bldr
-        sudo make docker-pymodel-bldr
-        sudo make sai TARGET=pymodel
-        sudo make docker-dash-dpapp dpapp check-sai-spec
-        sudo make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
-        sudo make docker-saithrift-client
-        ;;
-
-    # --- Clean Targets ---
-    py-clean)
-        clear
-        echo "Cleaning Python model artifacts..."
-        make py-artifacts-clean
-        ;;
-
-    sai-clean)
-        clear
-        echo "Cleaning SAI headers..."
-        sudo chown -R "${USER}:${USER}" .
-        sudo make sai-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
-        ;;
-
-    sai-server-clean)
-        clear
-        echo "Cleaning SAI Thrift Server..."
-        sudo chown -R "${USER}:${USER}" .
-        sudo make saithrift-server-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
         ;;
 
     kill)
