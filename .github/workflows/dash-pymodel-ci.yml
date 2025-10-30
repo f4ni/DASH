@@ -75,62 +75,62 @@ jobs:
       run:  make docker-dash-dpapp
     - name: Build dpapp
       run:  DOCKER_FLAGS=$docker_fg_flags make dpapp TARGET=pymodel
-    # - name: Run pymodel
-    # run:  DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
-    - name: Run pymodel and stream logs
-      run: |
-          DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
+    - name: Run pymodel
+      run:  DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
+    # - name: Run pymodel and stream logs
+    #   run: |
+    #       DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
 
-          # Get the container ID for the started instance
-          cid=$(docker ps -q --filter "name=dash-pymodel-runner")
-          echo "Container ID: $cid"
+    #       # Get the container ID for the started instance
+    #       cid=$(docker ps -q --filter "name=dash-pymodel-runner")
+    #       echo "Container ID: $cid"
 
-          # Stream logs for 10 seconds to debug startup
-          echo "Streaming pymodel server logs for 10 seconds..."
-          timeout 10 docker logs -f $cid || true
+    #       # Stream logs for 10 seconds to debug startup
+    #       echo "Streaming pymodel server logs for 10 seconds..."
+    #       timeout 10 docker logs -f $cid || true
 
     - name: Check if SAI spec is updated
       run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
     - name: Prepare network
       run:  DOCKER_FLAGS=$docker_fg_flags make network HAVE_DPAPP=y
-    # - name: Run dpapp
-    #   run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
-    - name: Run dpapp and stream logs
-      run: |
-          DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
+    - name: Run dpapp
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
+    # - name: Run dpapp and stream logs
+    #   run: |
+    #       DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
 
-          # Get the container ID for the started instance
-          cid=$(docker ps -q --filter "name=dash-dpapp-runner")
-          echo "Container ID: $cid"
+    #       # Get the container ID for the started instance
+    #       cid=$(docker ps -q --filter "name=dash-dpapp-runner")
+    #       echo "Container ID: $cid"
 
-          # Stream logs for 10 seconds to debug startup
-          echo "Streaming dpapp server logs for 10 seconds..."
-          timeout 10 docker logs -f $cid || true
+    #       # Stream logs for 10 seconds to debug startup
+    #       echo "Streaming dpapp server logs for 10 seconds..."
+    #       timeout 10 docker logs -f $cid || true
 
 
     - name: Generate saithrift-server
       run:  DOCKER_FLAGS=$docker_fg_flags make saithrift-server
     - name: Generate saithrift-client local docker
       run:  DOCKER_FLAGS=$docker_fg_flags make docker-saithrift-client
-    # - name: Run saithrift server
-    #   run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
-    - name: Run saithrift server and stream logs
-      run: |
-        # Start the container in detached mode (without --rm so it persists for log inspection)
-        DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
+    - name: Run saithrift server
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
+    # - name: Run saithrift server and stream logs
+    #   run: |
+    #     # Start the container in detached mode (without --rm so it persists for log inspection)
+    #     DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
 
-        # Get the container ID for the started instance
-        cid=$(docker ps -q --filter "name=dash-saithrift-server-runner")
-        echo "Container ID: $cid"
+    #     # Get the container ID for the started instance
+    #     cid=$(docker ps -q --filter "name=dash-saithrift-server-runner")
+    #     echo "Container ID: $cid"
 
-        # Stream logs for 5 seconds to debug startup
-        echo "Streaming saithrift server logs for 5 seconds..."
-        timeout 5 docker logs -f $cid || true
+    #     # Stream logs for 5 seconds to debug startup
+    #     echo "Streaming saithrift server logs for 5 seconds..."
+    #     timeout 5 docker logs -f $cid || true
 
     - name: Run PTF Tests
       run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests
-    - uses: actions/upload-artifact@v4
-      with:
-        name: libsai-debian-packages
-        path: /home/runner/work/DASH/DASH/dash-pipeline/SAI/debian/*deb
-        if-no-files-found: error
+    # - uses: actions/upload-artifact@v4
+    #   with:
+    #     name: libsai-debian-packages
+    #     path: /home/runner/work/DASH/DASH/dash-pipeline/SAI/debian/*deb
+    #     if-no-files-found: error
