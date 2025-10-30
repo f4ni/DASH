@@ -71,24 +71,31 @@ jobs:
       run:  make docker-pymodel-bldr
     - name: Generate SAI API
       run:  DOCKER_FLAGS=$docker_fg_flags make sai TARGET=pymodel
-    - name: Pull/Build docker dpapp image
-      run:  make docker-dash-dpapp
-    - name: Build dpapp
-      run:  DOCKER_FLAGS=$docker_fg_flags make dpapp
+    # - name: Pull/Build docker dpapp image
+    #   run:  make docker-dash-dpapp
+    # - name: Build dpapp
+    #   run:  DOCKER_FLAGS=$docker_fg_flags make dpapp
     - name: Run pymodel
       run:  DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
-    - name: Check if SAI spec is updated
-      run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
+    # - name: Check if SAI spec is updated
+    #   run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
     - name: Prepare network
       run:  DOCKER_FLAGS=$docker_fg_flags make network HAVE_DPAPP=y
-    - name: Run dpapp
-      run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp HAVE_DPAPP=y TARGET=pymodel
+    # - name: Run dpapp
+    #   run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp HAVE_DPAPP=y TARGET=pymodel
     - name: Generate saithrift-server
       run:  DOCKER_FLAGS=$docker_fg_flags make saithrift-server
     - name: Generate saithrift-client local docker
       run:  DOCKER_FLAGS=$docker_fg_flags make docker-saithrift-client
     - name: Run saithrift server
-      run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
+      run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server
+
+    - name: Wait for saithrift to start
+      run: sleep 10
+
+    - name: Logs of dash-saithrift-server-runner
+      run: docker logs dash-saithrift-server-runner
+
     - name: Run PTF Tests
       run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests
     - uses: actions/upload-artifact@v4

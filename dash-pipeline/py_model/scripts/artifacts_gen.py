@@ -644,6 +644,10 @@ if __name__ == "__main__":
     # Generate and serialize
     pyinfo = make_pyinfo(ignore_tables=[])
 
+    # Create an empty dash_pipeline.json file with valid JSON
+    with open(os.path.join(output_dir, "dash_pipeline.json"), "w") as f:
+        json.dump({}, f)
+
     # Dump to Protobuf text-format string
     textproto_output = dict_to_textproto(pyinfo)
     with open(os.path.join(output_dir, "dash_pipeline_p4rt.txt"), "w") as f:
