@@ -85,15 +85,15 @@ jobs:
       run:  DOCKER_FLAGS=$docker_fg_flags make network HAVE_DPAPP=y
     - name: Run dpapp
       run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
-    # - name: Sleep 5s
-    #   run:  sleep 5
+    - name: Sleep 5s
+      run:  sleep 5
     - name: Generate saithrift-server
       run:  DOCKER_FLAGS=$docker_fg_flags make saithrift-server
     - name: Generate saithrift-client local docker
       run:  DOCKER_FLAGS=$docker_fg_flags make docker-saithrift-client
     - name: Run saithrift server
       run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
-    - name: Sleep 5s
-      run:  sleep 5
+    # - name: Sleep 5s
+    #   run:  sleep 5
     - name: Run PTF Tests
       run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests
