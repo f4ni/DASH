@@ -83,7 +83,6 @@ def main() -> None:
     # Keep threads alive
     server_thread.join()
     sniff_thread.join()
-    time.sleep(5)
 
 
 if __name__ == "__main__":
