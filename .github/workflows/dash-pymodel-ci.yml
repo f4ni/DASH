@@ -93,3 +93,13 @@ jobs:
       run:  DOCKER_FLAGS=$docker_bg_flags make run-saithrift-server TARGET=pymodel
     - name: Run PTF Tests
       run:  DOCKER_FLAGS=$docker_fg_root_flags make run-saithrift-ptftests
+
+    # - uses: azure/docker-login@v1
+    #   if: ${{ github.event_name != 'pull_request' && github.repository == 'sonic-net/DASH' }}
+    #   with:
+    #     login-server: sonicdash.azurecr.io
+    #     username: ${{ secrets.DASH_ACR_USERNAME }}
+    #     password: ${{ secrets.DASH_ACR_PASSWORD }}
+    # - name: Publish DASH pymodel builder base docker image
+    #   run:  make docker-publish-pymodel-bldr
+    #   if: ${{ github.event_name != 'pull_request' && github.repository == 'sonic-net/DASH' }}

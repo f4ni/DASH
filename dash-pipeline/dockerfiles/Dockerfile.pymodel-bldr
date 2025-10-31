@@ -1,43 +1,25 @@
-# DASH Pymodel Builder with gRPC — based on amd64/ubuntu:24.04
+# Start from official slim Python 3.12 image
+FROM python:3.12-slim AS base
 
-FROM amd64/ubuntu:24.04 AS base
-LABEL maintainer="Farhan"
-LABEL description="DASH DASH Pymodel Builder"
+LABEL maintainer="SONIC-DASH Community"
+LABEL description="DASH Pymodel Builder"
 
 # Environment setup
-ARG TZ=America/Los_Angeles
-ENV TZ=${TZ} \
-    DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 \
+ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    GIT_SSL_NO_VERIFY=true
+    TZ=America/Los_Angeles \
+    DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.12 (native in 24.04) + dependencies
+# Install only required system packages
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
-        python3 \
-        python3-pip \
-        python3-venv \
         python3-dev \
-        build-essential \
         libpcap-dev \
-        git \
-        curl \
-        gcc \
-        g++ \
-        make \
-        pkg-config \
-        libssl-dev \
-        libffi-dev \
-        autoconf \
-        libtool \
         ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python packages inside a virtual environment
-RUN python3 -m venv /opt/venv && \
-    . /opt/venv/bin/activate && \
-    pip install --no-cache-dir --upgrade pip && \
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
         scapy \
         grpcio \
@@ -50,20 +32,16 @@ RUN python3 -m venv /opt/venv && \
         googleapis-common-protos \
         packaging
 
-# Make sure Python inside venv is default
-ENV PATH="/opt/venv/bin:$PATH"
-
 # Create non-root user
 ARG user=dashuser
 ARG group=dashusers
 ARG uid=4321
 ARG guid=4321
-RUN groupadd -g ${guid} ${group} && \
-    useradd -m -u ${uid} -g ${guid} -s /bin/bash ${user}
+RUN addgroup --gid ${guid} ${group} && \
+    adduser --disabled-password --gecos "" --uid ${uid} --gid ${guid} ${user}
 
 USER ${user}
 WORKDIR /
-
 # Copy project
 COPY --chown=${user}:${group} py_model /py_model
 
@@ -71,4 +49,4 @@ COPY --chown=${user}:${group} py_model /py_model
 ENV PYTHONPATH=/py_model
 
 # Default command
-CMD ["python3"]
+CMD ["python"]
