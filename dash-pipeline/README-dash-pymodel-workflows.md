@@ -48,30 +48,43 @@ Developing Python model code requires generating artifacts via `make py-artifact
 
 ![dev-workflow-pymodel](images/dev-workflow-pymodel.svg)
 
-### Sending packets "manually" into the switch
-Assuming you've done `make all` at least once, you will have a handy saithrift-client docker image which contains scapy, snappi libraries to run ixia-c SW traffic generator, etc. See the "optional" box in the figure above.
-
-You can enter the container and run ad-hoc scapy commands, see below:
-```
-make pymodel                    # console 1 - runs Python model with packet sniffer
-make run-saithrift-client-bash  # console 2
-...
-root@chris-z4:/tests-dev/saithrift# scapy
->>> p=Ether()/IP()/UDP()
->>> sendp(p, iface='veth0')
-.
-Sent 1 packets.
->>>
-```
 
 ## Use-Case II - Developing End-to-End Tests with saithrift PTF
 End-to-end tests require building artifacts and saithrift-client docker image.
 
 A concise set of commands to run, in three separate terminals:
 ```
-[make clean &&] make py-artifacts sai TARGET=pymodel saithrift-server docker-saithrift-client pymodel   # console 1
-make run-saithrift-server             # console 2
-make run-saithrift-client-ptftests   # console 3
+Console #1:
+-----------
+  Clean (Optional):
+    make py-artifacts-clean
+    make sai-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+    make saithrift-server-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+
+  Build the Pymodel:
+    make py-artifacts docker-saithrift-bldr
+    make docker-pymodel-bldr
+    make sai TARGET=pymodel
+    make docker-dash-dpapp dpapp check-sai-spec
+    make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+    make docker-saithrift-client
+
+  Run the Pymodel:
+    make run-pymodel HAVE_DPAPP=y
+
+Console #2:
+-----------
+    make run-dpapp TARGET=pymodel
+
+Console #3:
+-----------
+    make run-saithrift-server TARGET=pymodel
+
+Console #4:
+-----------
+    make docker-saithrift-client
+    make run-saithrift-ptftests
+
 ```
 
 ![dev-workflow-pymodel-saithrift](images/dev-workflow-pymodel-saithrift.svg)
@@ -196,7 +209,7 @@ This consists of two main steps
 ## Build saithrift-server
 This builds a saithrift-server daemon, which is linked to the `libsai` library and also includes the SAI-to-P4Runtime adaptor. It also builds Python thrift libraries and saithrift libraries.
 ```
-make saithrift-server
+make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
 ```
 
 ## Create veth pairs for py_model
@@ -226,7 +239,7 @@ make pymodel HAVE_DPAPP=y   # launches Python model with packet sniffer
 When this server is launched, it will establish a P4Runtime session (behind the scenes) to the running Python model. The thrift server listens on port `9092` for Thrift messages carrying SAI rpc commands. These commands are dispatched to the SAI library handlers. These handlers translate them into corresponding P4Runtime RPC commands and are sent to the Python model daemon onto a socket at standard P4Runtime port `9559`.
 
 ```
-make run-saithrift-server
+make run-saithrift-server TARGET=pymodel
 ```
 
 When the server starts, the first SAI command it receives will load the `libsai.so` shared library and establish a P4Runtime connection. This results in a console message similar to below. Note this message doesn't necessarily appear when the daemon starts. This also loads the Python model with the P4Info (JSON file), see [Initialize Python Model](#initialize-python-model).
