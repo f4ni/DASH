@@ -1,3 +1,4 @@
+import hashlib
 import builtins
 from py_model.libs.__utils import *
 from py_model.libs.__id_map import *
@@ -191,7 +192,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
     entry.priority = insertRequest.priority
     return entry
 
-def table_insert_api(insertRequest: InsertRequest, req_type):
+def table_insert_api(insertRequest: InsertRequest, obj_type, hash):
     table_id = insertRequest.table
     table_name = get_table_name(table_id)
     if table_name == "unknown":
@@ -209,22 +210,15 @@ def table_insert_api(insertRequest: InsertRequest, req_type):
     if not entry:
         return RETURN_FAILURE
 
-    if req_type == 'INSERT':
-        for e in table.entries:
-            if e.values == entry.values:
-                py_log("info", "Match entry exists, use MODIFY if you wish to change action")
-                return RETURN_FAILURE
-        ret = table.insert(entry)
-    elif req_type == 'MODIFY':
-        ret = table.update(entry)
-    elif req_type == 'DELETE':
-        ret = table.delete(entry)
-        if ret == RETURN_SUCCESS:
-            py_log("info", f"Entry deleted from Table {table_name}")
-        else:
-            py_log("info", f"Failed deleting the entry from Table {table_name}")
+    if obj_type == 'INSERT':
+        if hash in table.entries:
+            py_log("info", "Matching entry exists, use MODIFY if you wish to change action")
+            return RETURN_FAILURE
+        ret = table.insert(hash, entry)
+    elif obj_type == 'MODIFY':
+        ret = table.update(hash, entry)
     else:
-        py_log("info", f"Unknown operation type: {req_type}")
+        py_log("info", f"Unknown operation type: {obj_type}")
         return RETURN_FAILURE
 
     return RETURN_SUCCESS
@@ -249,15 +243,16 @@ def normalize_table_entry(entry: dict) -> dict:
 
     return normalized
 
-def parse_insert_request(json_obj):
+def parse_insert_request(json_obj, obj_type):
     insertRequest = InsertRequest()
 
-    # Extract table entry information
-    req_type = json_obj.get("type", {})
-    py_log(None, f"\nReceived request: {req_type}")
-    py_log(None, "=" * 25)
+    if obj_type != "DELETE":
+        py_log(None, f"\nReceived request: {obj_type}")
+        py_log(None, "=" * 25)
 
     table_entry = json_obj.get("entity", {}).get("tableEntry", {})
+    match = table_entry.get("match", {})
+    hash = hashlib.sha256(str(match).encode()).hexdigest()
 
     table_entry = normalize_table_entry(table_entry)
 
@@ -267,8 +262,15 @@ def parse_insert_request(json_obj):
 
     table = resolve_table_name(table_name)
 
+    if obj_type == 'DELETE':
+        ret = table.delete(hash)
+        if ret == RETURN_SUCCESS:
+            py_log("info", f"Entry deleted from Table {table_name}")
+
+        return None, hash
+
     keys = list(table.key.keys())
-    py_log("info", f"Table {table_name}")
+    py_log(None, f"Table: {table_name}")
 
     # Process match fields
     insertRequest.values = []
@@ -324,7 +326,7 @@ def parse_insert_request(json_obj):
         insertRequest.values.append(value)
 
     insertRequest.priority = table_entry.get("priority", 0)
-    py_log("info", f"Priority: {insertRequest.priority}")
+    py_log(None, f"Priority: {insertRequest.priority}")
 
     # Action
     action_data = table_entry.get("action", {}).get("action", {})
@@ -344,6 +346,5 @@ def parse_insert_request(json_obj):
             else:
                 hex_val = 0
             insertRequest.params.append(hex_val)
-        # py_log("info", f"Action {insertRequest.action} : {action_name} {insertRequest.params}\n")
 
-    return insertRequest
+    return insertRequest, hash

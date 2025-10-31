@@ -1,9 +1,9 @@
-from py_model.libs.__utils import *
+from enum import Enum, auto
 from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 from py_model.libs.__dash_enum import *
 from py_model.libs.__packet_in import *
 from py_model.libs.__packet_out import *
-from enum import Enum, auto
 
 class State(Enum):
     accept                  =  auto()
@@ -22,7 +22,6 @@ class State(Enum):
     parse_customer_udp      =  auto()
 
 def dash_parser(packet: packet_in):
-    py_log("info", "dash_parser...")
     # By default, packet is REGULAR from EXTERNAL
     hdr.packet_meta = dash_packet_meta_t()
     hdr.packet_meta.packet_source = dash_packet_source_t.EXTERNAL
@@ -190,8 +189,6 @@ def _dash_parser(packet: packet_in, hdr: headers_t, state: State):
             return State.accept
 
 def dash_deparser(packet: packet_out):
-    py_log("info", "dash_deparser...")
-
     packet.emit(hdr.dp_ethernet)
     packet.emit(hdr.packet_meta)
     packet.emit(hdr.flow_key)

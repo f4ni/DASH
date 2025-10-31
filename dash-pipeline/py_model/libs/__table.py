@@ -141,9 +141,8 @@ class Table:
         if not tname:
             raise ValueError("Each table must have a unique 'tname'")
 
-        self.entries = []
+        self.entries = {}
         table_objs[tname] = self
-        # table_ids[self.id] = tname
         self.const_default_action = None
         self.const_default_action_id = None
         self.default_action = None
@@ -193,29 +192,31 @@ class Table:
                 self.const_default_action = None
                 self.const_default_action_id = None
 
-
     def _register_action(self, func, hints=None):
         real_func = func.__func__ if isinstance(func, staticmethod) else func
         name = getattr(real_func, "__qualname__", getattr(real_func, "__name__", str(func)))
         if name not in action_objs:
             action_objs[name] = (func, hints or {})
 
-    def insert(self, entry):
-        self.entries.append(entry)
+    def insert(self, hash, entry):
+        if hash in self.entries:
+            py_log("warn", f"Entry already exists for hash {hash}")
+        else:
+            self.entries[hash] = entry
 
-    def update(self, entry):
-        for idx, e in enumerate(self.entries):
-            if e.values == entry.values:
-                self.entries[idx] = entry
-                py_log("info", f"Entry modified: {entry}")
-                return
+    def update(self, hash, entry):
+        if hash in self.entries:
+            self.entries[hash] = entry
+        else:
+            py_log("warn", f"No entry found to update for hash {hash}")
 
-    def delete(self, entry):
-        for e in self.entries:
-            if e.values == entry.values:
-                self.entries.remove(e)
-                return RETURN_SUCCESS
-        return RETURN_FAILURE
+    def delete(self, hash):
+        if hash in self.entries:
+            del self.entries[hash]
+            return RETURN_SUCCESS
+        else:
+            py_log("warn", f"No entry found to delete for hash {hash}")
+            return RETURN_FAILURE
 
     def apply(self):
         entry = self.__lookup()
@@ -286,7 +287,7 @@ class Table:
 
     def __get_all_matching_entries(self):
         matching_entries = []
-        for e in self.entries:
+        for e in self.entries.values():
             if self.__match_entry(e):
                 matching_entries.append(e)
         return matching_entries

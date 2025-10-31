@@ -77,8 +77,6 @@ jobs:
       run:  make docker-dash-dpapp
     - name: Build dpapp
       run:  DOCKER_FLAGS=$docker_fg_flags make dpapp TARGET=pymodel
-    # - name: Sleep 1s
-    #   run:  sleep 1
     - name: Check if SAI spec is updated
       run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
     - name: Prepare network

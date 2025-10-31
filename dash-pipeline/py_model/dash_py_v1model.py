@@ -87,7 +87,7 @@ def dash_py_model(pkt_bytes):
  
     py_log("info", f"standard_metadata.ingress_port: {standard_metadata.ingress_port} | standard_metadata.egress_spec: {standard_metadata.egress_spec}")
     if is_dropped(standard_metadata):
-        py_log("info", "Pipeline dropped the packet")
+        py_log("info", "Pipeline dropped the packet\n")
     else:
         dash_compute_checksum()
 

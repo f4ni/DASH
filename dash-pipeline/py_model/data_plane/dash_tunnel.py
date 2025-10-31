@@ -122,7 +122,6 @@ def do_tunnel_encap( underlay_dmac : Annotated[int,  EthernetAddress_size],
                      underlay_sip  : Annotated[int,  IPv4Address_size],
                      dash_encapsulation : dash_encapsulation_t,
                      tunnel_key: Annotated[int,  24]):
-    print(f"dash_encapsulation = {dash_encapsulation}")
     if dash_encapsulation == dash_encapsulation_t.VXLAN:
         if meta.tunnel_pointer == 0:
             push_vxlan_tunnel_u0(underlay_dmac, underlay_smac, underlay_dip, underlay_sip, tunnel_key)

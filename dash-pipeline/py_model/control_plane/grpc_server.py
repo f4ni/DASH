@@ -2,12 +2,11 @@ import json
 import time
 import grpc
 from concurrent import futures
+from py_model.libs.__id_map import *
+from py_model.control_plane.control_plane import *
 from py_model.control_plane.p4_helper.v1 import p4runtime_pb2
 from py_model.control_plane.p4_helper.v1 import p4runtime_pb2_grpc
 import google.protobuf.json_format as json_format
-from py_model.libs.__id_map import *
-
-from py_model.control_plane.control_plane import *
 
 slices = 3
 table_entries = {}
@@ -88,15 +87,7 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
             try:
                 # Convert Protobuf message to JSON
                 update_dict = json.loads(json_format.MessageToJson(update))
-                insert_request = parse_insert_request(update_dict)
                 obj_type = update_dict.get("type", {})
-                ret = table_insert_api(insert_request, obj_type)
-                if ret == RETURN_FAILURE:
-                    py_log("error", f"Entry already exists, skipping update [{idx}]")
-                    context.abort(
-                        grpc.StatusCode.ALREADY_EXISTS,
-                        f"Error processing update [{idx}]"
-                    )
 
                 table_entry = update.entity.table_entry
                 table_id = table_entry.table_id
@@ -104,23 +95,8 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                 if table_id not in table_entries:
                     table_entries[table_id] = []
 
-                if obj_type == "INSERT":
-                    table_entries[table_id].append(table_entry)
-
-                elif obj_type == "MODIFY":
-                    # Find matching entry by comparing match fields
-                    replaced = False
-                    for i, existing_entry in enumerate(table_entries[table_id]):
-                        if existing_entry.match == table_entry.match:
-                            table_entries[table_id][i] = table_entry
-                            replaced = True
-                            py_log("info", f"Modified entry in table {table_id}")
-                            break
-                    if not replaced:
-                        py_log("info", f"Modify target not found, inserting instead")
-                        table_entries[table_id].append(table_entry)
-
-                elif obj_type == "DELETE":
+                ins_req, hash = parse_insert_request(update_dict, obj_type)
+                if obj_type == "DELETE":
                     # Remove matching entry by comparing match fields
                     removed = False
                     for i, existing_entry in enumerate(table_entries[table_id]):
@@ -130,7 +106,30 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                             break
                     if not removed:
                         py_log("info", f"Delete target not found in table {table_id}")
+                else:
+                    ret = table_insert_api(ins_req, obj_type, hash)
+                    if ret == RETURN_FAILURE:
+                        py_log("error", f"Entry already exists, skipping update [{idx}]")
+                        context.abort(
+                            grpc.StatusCode.ALREADY_EXISTS,
+                            f"Error processing update [{idx}]"
+                        )
 
+                    if obj_type == "INSERT":
+                        table_entries[table_id].append(table_entry)
+
+                    elif obj_type == "MODIFY":
+                        # Find matching entry by comparing match fields
+                        replaced = False
+                        for i, existing_entry in enumerate(table_entries[table_id]):
+                            if existing_entry.match == table_entry.match:
+                                table_entries[table_id][i] = table_entry
+                                replaced = True
+                                py_log("info", f"Modified entry in table {table_id}")
+                                break
+                        if not replaced:
+                            py_log("info", f"Modify target not found, inserting instead")
+                            table_entries[table_id].append(table_entry)
             except Exception as e:
                 py_log("error", "Error processing update [{idx}]: {e}")
                 context.abort(

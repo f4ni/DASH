@@ -23,19 +23,20 @@ def sniff_packet() -> None:
     """Capture packets on configured interfaces and process them."""
     def process_packet(pkt: Ether) -> None:
         raw_bytes = bytes(pkt)
-        py_log("info", "Packet received on", pkt.sniffed_on, raw_bytes.hex())
+        py_log("info", f"Packet received on {pkt.sniffed_on}")
+        py_log(None, f"{raw_bytes.hex()}\n\n")
 
         result = dash_py_model(raw_bytes)
         if not result:
             return
 
         ether_frame = Ether(result)
-        print_packet(ether_frame)
+        # print_packet(ether_frame)
 
         egress_idx = vars.standard_metadata.egress_spec
         if egress_idx < len(vars.iface_list):
             egress_port = vars.iface_list[egress_idx]
-            py_log("info", f"Transmitting {len(ether_frame)} bytes out of port {egress_port}")
+            py_log("info", f"Transmitting {len(ether_frame)} bytes out of port {egress_port}\n")
             sendp(ether_frame, iface=egress_port, verbose=False)
         else:
             py_log("warn", f"Egress port index {egress_idx} out of range — dropping packet.")
