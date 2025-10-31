@@ -44,8 +44,7 @@ This section gives you a quick idea of how to work on various tasks efficiently 
 >Do you have another use-case in mind? Help document it with a Pull-Request, or ask the community.
 
 ## Use Case I - Developing Python Model Code
-Developing Python model code requires generating artifacts via `make py-artifacts`. This is very quick since Python code doesn't need compilation. You can run the code via `make pymodel`. This setup doesn't support any switch configuration, so the testability is minimal. You can send in packets and observe the Python console logging to verify packet parsing/deparsing. See [Sending packets "manually" into the switch](#sending-packets-manually-into-the-switch)
-
+Developing Python model code requires generating artifacts via `make py-artifacts`. This is very quick since Python code doesn't need compilation. You can run the code via `make pymodel`. This setup doesn't support any switch configuration, so the testability is minimal.
 ![dev-workflow-pymodel](images/dev-workflow-pymodel.svg)
 
 
@@ -62,10 +61,12 @@ Console #1:
     make saithrift-server-clean HOST_USER=$(id -u) HOST_GROUP=$(id -g)
 
   Build the Pymodel:
-    make py-artifacts docker-saithrift-bldr
+    make py-artifacts
+    make docker-saithrift-bldr
     make docker-pymodel-bldr
     make sai TARGET=pymodel
-    make docker-dash-dpapp dpapp check-sai-spec
+    make docker-dash-dpapp
+    make dpapp check-sai-spec
     make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
     make docker-saithrift-client
 
@@ -82,8 +83,7 @@ Console #3:
 
 Console #4:
 -----------
-    make docker-saithrift-client
-    make run-saithrift-ptftests
+  make run-saithrift-ptftests
 
 ```
 
@@ -162,15 +162,13 @@ make py-artifacts
 ## Cleanup
 This will delete all built artifacts, restore the SAI submodule and kill all running containers.
 ```
-make clean
+make py-artifacts-clean
 ```
 
 ## Stop Containers
 This will kill one or all containers:
 ```
-pkill -f main_dash.py           # stop the Python model
-make kill-saithrift-server       # stop the RPC server
-make kill-all                    # all of the above
+make kill            
 ```
 
 ## Generate Python Model Artifacts
@@ -190,10 +188,8 @@ The primary outputs of interest are:
 This library is the crucial item to allow integration with a Network Operating System (NOS) like SONiC. It wraps an implementation specific "SDK" with standard Switch Abstraction Interface (SAI) APIs. In this case, an adaptor translates SAI API table/attribute CRUD operations into equivalent P4Runtime RPC calls, which is the native RPC API for the Python model's gRPC server.
 
 ```
-make sai-headers TARGET=pymodel     # Auto-generate headers & adaptor code
-make libsai TARGET=pymodel          # Compile into libsai.so
-make sai TARGET=pymodel             # Combines steps above
 make sai-clean                      # Clean up artifacts and Git Submodule
+make sai                            # Combines steps above
 ```
 
 These targets generate SAI headers from the P4Info which was described above. It uses [Jinja2](https://jinja.palletsprojects.com/en/3.1.x/) which renders [SAI/templates](SAI/templates) into C++ source code for the SAI headers corresponding to the DASH API as defined in the Python model code. It then compiles this code into a shared library `libsai.so` which will later be used to link to a test server (Thrift) or `syncd` daemon for production.
@@ -230,7 +226,7 @@ This will run the Python model packet sniffer in the foreground. The main proces
 >**NOTE:** Stop the process (CTRL-c) to shut down the Python model. You can also invoke `pkill -f main_dash.py` from another terminal or script.
 
 ```
-make pymodel HAVE_DPAPP=y   # launches Python model with packet sniffer
+make pymodel  # launches Python model with packet sniffer
 ```
 
 ## Run saithrift-server
