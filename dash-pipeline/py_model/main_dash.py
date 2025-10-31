@@ -1,6 +1,7 @@
 import sys
-import threading
+import time
 import signal
+import threading
 from scapy.all import sniff, sendp, Ether, hexdump
 from py_model.libs import __vars as vars
 from py_model.libs.__utils import py_log
@@ -82,6 +83,7 @@ def main() -> None:
     # Keep threads alive
     server_thread.join()
     sniff_thread.join()
+    time.sleep(5)
 
 
 if __name__ == "__main__":

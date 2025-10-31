@@ -75,14 +75,14 @@ jobs:
       run:  make docker-dash-dpapp
     - name: Build dpapp
       run:  DOCKER_FLAGS=$docker_fg_flags make dpapp TARGET=pymodel
+    - name: Run pymodel
+      run:  DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
+    # - name: Sleep 1s
+    #   run:  sleep 1
     - name: Check if SAI spec is updated
       run:  DOCKER_FLAGS=$docker_fg_flags make check-sai-spec
     - name: Prepare network
       run:  DOCKER_FLAGS=$docker_fg_flags make network HAVE_DPAPP=y
-    - name: Run pymodel
-      run:  DOCKER_FLAGS=$docker_bg_root_flags make run-pymodel HAVE_DPAPP=y
-      # - name: Sleep 1s
-      #   run:  sleep 1
     - name: Run dpapp
       run:  DOCKER_FLAGS=$docker_bg_flags make run-dpapp TARGET=pymodel
     - name: Generate saithrift-server
