@@ -1,8 +1,8 @@
-# DASH Python Environment with gRPC — based on amd64/ubuntu:24.04
+# DASH Pymodel Builder with gRPC — based on amd64/ubuntu:24.04
 
 FROM amd64/ubuntu:24.04 AS base
 LABEL maintainer="Farhan"
-LABEL description="DASH Python 3.12 environment with gRPC and dependencies"
+LABEL description="DASH DASH Pymodel Builder"
 
 # Environment setup
 ARG TZ=America/Los_Angeles
