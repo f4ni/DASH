@@ -21,9 +21,6 @@ DIRECT_COUNTER = 0x13
 # OTHER_EXTERNS_START = PyIds_Prefix_OTHER_EXTERNS_START
 # MAX = PyIds_Prefix_MAX
 
-tid_gen = count(start=100001)
-aid_gen = count(start=200001)
-
 # Global registries
 table_ids = {}          # {tid: table_name}
 table_objs = {}         # {table_name: Table}
@@ -54,9 +51,4 @@ def gen_symbol_id(name: str, prefix: int) -> int:
     x = compute_hash(name)
     suffix = x & 0xFFFFFF
     id = (prefix << 24) | suffix
-    # print(f"name = {name}, {id}")
     return id 
-
-def get_hex_value(value: str):
-    decoded = base64.b64decode(value)
-    return decoded.hex()

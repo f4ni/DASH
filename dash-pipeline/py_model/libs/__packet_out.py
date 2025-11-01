@@ -1,9 +1,8 @@
 from inspect import *
-from typing import get_origin, get_args, Annotated
 from enum import Enum
 from bitarray import bitarray
 from bitarray.util import int2ba
-import math
+from typing import get_origin, get_args, Annotated
 
 
 class packet_out:
@@ -20,7 +19,6 @@ class packet_out:
             for field_name, field_type in annotations.items():
                 width = self._extract_bit_width(field_type, field_name) #width 48/32/16/8
                 value = getattr(hdr, field_name) #Field value
-                # print(f"Emitting field: {field_name}, type: {field_type} width : {width}, value: {value}")
                 value = self._convert_to_int(value, field_name)
                 if width <= 0:
                     raise ValueError(f"Field '{field_name}': bit width must be > 0")

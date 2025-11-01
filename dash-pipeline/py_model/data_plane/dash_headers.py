@@ -1,7 +1,6 @@
 from typing import *
 from inspect import *
 from enum import IntEnum, IntFlag
-from py_model.libs.__dash_enum import *
 
 EthernetAddress_size    = 48
 IPv4Address_size        = 32

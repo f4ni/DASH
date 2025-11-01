@@ -1,7 +1,6 @@
 from enum import Enum, auto
 from py_model.libs.__vars import *
 from py_model.libs.__utils import *
-from py_model.libs.__dash_enum import *
 from py_model.libs.__packet_in import *
 from py_model.libs.__packet_out import *
 
