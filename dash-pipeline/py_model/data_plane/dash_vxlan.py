@@ -1,4 +1,4 @@
-from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 
 def vxlan_encap(underlay_dmac : Annotated[int, EthernetAddress_size],
                 underlay_smac : Annotated[int, EthernetAddress_size],

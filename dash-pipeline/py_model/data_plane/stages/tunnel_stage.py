@@ -1,4 +1,4 @@
-from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 from py_model.libs.__table import *
 from py_model.data_plane.routing_actions.routing_action_encap_underlay import *
 

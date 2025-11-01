@@ -1,9 +1,6 @@
-import time
-import threading
 from enum import Enum
 from typing import Dict, List, Optional, Any
 
-from py_model.libs.__vars import *
 from py_model.libs.__utils import *
 from py_model.data_plane.dash_metadata import *
 

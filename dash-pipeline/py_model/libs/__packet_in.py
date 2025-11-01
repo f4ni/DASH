@@ -1,9 +1,8 @@
-from inspect import get_annotations
-from typing import get_origin, get_args, Annotated
 from enum import Enum
 from bitarray import bitarray
 from bitarray.util import ba2int
-import math
+from inspect import get_annotations
+from typing import get_origin, get_args, Annotated
 
 class packet_in:
     def __init__(self):

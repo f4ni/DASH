@@ -1,10 +1,4 @@
 
-import base64
-from itertools import count
-
-RETURN_SUCCESS = 0
-RETURN_FAILURE = -1
-
 UNSPECIFIED = 0x00
 ACTION = 0x01
 TABLE = 0x02

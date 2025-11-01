@@ -1,23 +1,12 @@
 import sys
-import time
 import signal
 import threading
-from scapy.all import sniff, sendp, Ether, hexdump
-from py_model.libs import __vars as vars
-from py_model.libs.__utils import py_log
+from scapy.all import sniff, sendp, Ether
 from py_model.dash_py_v1model import dash_py_model
 from py_model.control_plane.grpc_server import serve
+from py_model.libs.__utils import py_log, standard_metadata
 
-
-def print_packet(pkt_bytes: bytes | Ether) -> None:
-    """Pretty-print a packet as a hex dump."""
-    pkt = Ether(pkt_bytes) if isinstance(pkt_bytes, (bytes, bytearray)) else pkt_bytes
-    print("\n" + "=" * 80)
-    print("Hex Dump")
-    print("=" * 80)
-    hexdump(pkt)
-    print("=" * 80 + "\n")
-
+iface_list = []
 
 def sniff_packet() -> None:
     """Capture packets on configured interfaces and process them."""
@@ -31,17 +20,14 @@ def sniff_packet() -> None:
             return
 
         ether_frame = Ether(result)
-        # print_packet(ether_frame)
 
-        egress_idx = vars.standard_metadata.egress_spec
-        if egress_idx < len(vars.iface_list):
-            egress_port = vars.iface_list[egress_idx]
+        egress_idx = standard_metadata.egress_spec
+        if egress_idx < len(iface_list):
+            egress_port = iface_list[egress_idx]
             py_log("info", f"Transmitting {len(ether_frame)} bytes out of port {egress_port}\n")
             sendp(ether_frame, iface=egress_port, verbose=False)
         else:
             py_log("warn", f"Egress port index {egress_idx} out of range — dropping packet.")
-
-    iface_list = vars.iface_list
 
     sniff(iface=iface_list, prn=process_packet, store=False, filter="inbound")
 
@@ -52,10 +38,10 @@ def setup_interfaces(args: list[str]) -> None:
         print("\nUsage: python3 main_py_dash.py '<IFACE0>' '<IFACE1>' ['<IFACE2>']")
         sys.exit(1)
 
-    vars.iface_list.extend(args[1:4])  # add 2 or 3 interfaces
+    iface_list.extend(args[1:4])  # add 2 or 3 interfaces
     print("")  # blank line for readability
 
-    for idx, iface in enumerate(vars.iface_list):
+    for idx, iface in enumerate(iface_list):
         role = "(DPAPP)" if idx == 2 else ""
         print(f"Adding interface {iface} as port {idx} {role}")
     print("")

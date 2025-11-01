@@ -1,5 +1,4 @@
 from py_model.libs.__utils import *
-from py_model.libs.__vars import *
 
 # Encodes V4 in V6
 def service_tunnel_encode(st_dst      : Annotated[int, IPv6Address_size],

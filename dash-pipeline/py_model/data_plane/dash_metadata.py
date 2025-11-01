@@ -315,7 +315,3 @@ class metadata_t:
                 setattr(self, k, 0)
             else:
                 setattr(self, k, None)
-
-
-# def deny(meta):
-#     meta.dropped = True

@@ -1,12 +1,12 @@
 import json
 import time
 import grpc
+import google.protobuf.json_format as json_format
 from concurrent import futures
 from py_model.libs.__id_map import *
 from py_model.control_plane.control_plane import *
 from py_model.control_plane.p4_helper.v1 import p4runtime_pb2
 from py_model.control_plane.p4_helper.v1 import p4runtime_pb2_grpc
-import google.protobuf.json_format as json_format
 
 slices = 3
 table_entries = {}

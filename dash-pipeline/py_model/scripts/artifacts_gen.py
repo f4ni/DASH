@@ -14,15 +14,15 @@ import enum
 import json
 import base64
 import inspect
-from collections import OrderedDict
 from functools import lru_cache
+from collections import OrderedDict
 from typing import Annotated, Optional, get_origin, get_args, get_type_hints as get_annotations
 
-from py_model.scripts.call_graph import generate_call_chain
-from py_model.scripts.gen_action_chain import generate_action_chain
-from py_model.scripts.gen_table_chain import generate_table_chain
-from py_model.scripts.gen_counter_chain import generate_counter_chain
 from py_model.scripts.gen_ir import gen_ir
+from py_model.scripts.call_graph import generate_call_chain
+from py_model.scripts.gen_table_chain import generate_table_chain
+from py_model.scripts.gen_action_chain import generate_action_chain
+from py_model.scripts.gen_counter_chain import generate_counter_chain
 
 from py_model.libs.__table import *
 from py_model.libs.__id_map import *
@@ -30,11 +30,9 @@ from py_model.libs.__jsonize import *
 from py_model.libs.__counters import *
 from py_model.dash_py_v1model import *
 
+_isclass = inspect.isclass
 _isfunction = inspect.isfunction
 _getmembers = inspect.getmembers
-_issubclass = issubclass
-_isclass = inspect.isclass
-_int_types = (int,)
 _enum_types = (enum.IntEnum, enum.IntFlag)
 _RE_CAMEL1 = re.compile(r'(.)([A-Z][a-z]+)')
 _RE_CAMEL2 = re.compile(r'([a-z0-9])([A-Z])')

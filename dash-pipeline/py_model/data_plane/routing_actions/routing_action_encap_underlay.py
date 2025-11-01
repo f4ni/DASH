@@ -1,4 +1,4 @@
-from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 from py_model.data_plane.dash_tunnel import *
 
 def push_action_encap_u0(dash_encapsulation : dash_encapsulation_t = dash_encapsulation_t.VXLAN,

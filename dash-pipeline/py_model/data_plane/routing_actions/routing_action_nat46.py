@@ -1,4 +1,3 @@
-from py_model.libs.__vars import *
 from py_model.libs.__utils import *
 
 DISABLE_128BIT_ARITHMETIC = 1

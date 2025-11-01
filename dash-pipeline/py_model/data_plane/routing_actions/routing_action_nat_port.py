@@ -1,4 +1,3 @@
-from py_model.libs.__vars import *
 from py_model.libs.__utils import *
 
 def push_action_snat_port(sport: Annotated[int, 16]):

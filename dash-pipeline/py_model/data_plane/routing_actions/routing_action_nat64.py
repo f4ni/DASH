@@ -1,4 +1,3 @@
-from py_model.libs.__vars import *
 from py_model.libs.__utils import *
 def push_action_nat64(src: Annotated[int, IPv4Address_size],
                       dst: Annotated[int, IPv4Address_size]):

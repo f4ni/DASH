@@ -1,11 +1,11 @@
 
 import logging
 from py_model.libs.__id_map import *
-# from py_model.libs.__packet_in import *
-# from py_model.libs.__packet_out import *
-# from py_model.libs.__standard_metadata import *
-# from py_model.data_plane.dash_headers import *
-# from py_model.data_plane.dash_metadata import *
+from py_model.libs.__packet_in import *
+from py_model.libs.__packet_out import *
+from py_model.libs.__standard_metadata import *
+from py_model.data_plane.dash_headers import *
+from py_model.data_plane.dash_metadata import *
 
 # target definition
 TARGET_DPDK_PNA             = 0
@@ -18,14 +18,19 @@ STATEFUL_P4                 = 0
 PNA_CONNTRACK               = 0
 DISABLE_128BIT_ARITHMETIC   = 0
 
+RETURN_SUCCESS = 0
+RETURN_FAILURE = -1
 
-# iface_list = []
 
-# # hdr = headers_t()
-# # meta = metadata_t()
-# standard_metadata = standard_metadata_t()
-# pkt_in = packet_in()
-# pkt_out = packet_out()
+hdr = headers_t()
+meta = metadata_t()
+standard_metadata = standard_metadata_t()
+pkt_in = packet_in()
+pkt_out = packet_out()
+
+
+def deny():
+    meta.dropped = True
 
 
 # Configure logging

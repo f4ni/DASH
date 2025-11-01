@@ -1,4 +1,4 @@
-from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 
 def nvgre_encap(underlay_dmac : Annotated[int, 48],
                 underlay_smac : Annotated[int, 48],

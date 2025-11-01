@@ -1,6 +1,5 @@
-from py_model.data_plane.dash_tunnel import *
-from py_model.libs.__vars import *
 from py_model.libs.__utils import *
+from py_model.data_plane.dash_tunnel import *
 
 def push_action_set_smac(overlay_smac: Annotated[int, EthernetAddress_size]):
     # not used by now

@@ -1,12 +1,12 @@
 import struct
 import socket
 
-from py_model.libs.__vars import *
+from py_model.libs.__utils import *
 from py_model.libs.__obj_classes import *
 
+from py_model.data_plane.dash_parser import *
 from py_model.data_plane.dash_headers import *
 from py_model.data_plane.dash_metadata import *
-from py_model.data_plane.dash_parser import *
 from py_model.data_plane.dash_pipeline import *
 
 def dash_verify_checksum():
