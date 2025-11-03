@@ -44,7 +44,8 @@ This section gives you a quick idea of how to work on various tasks efficiently 
 >Do you have another use-case in mind? Help document it with a Pull-Request, or ask the community.
 
 ## Use Case I - Developing Python Model Code
-Developing Python model code requires generating artifacts via `make py-artifacts`. This is very quick since Python code doesn't need compilation. You can run the code via `make pymodel`. This setup doesn't support any switch configuration, so the testability is minimal.
+Developing Python model code requires generating artifacts via `make py-artifacts`. This is very quick since Python code doesn't need compilation. You can run the code via ` make run-pymodel HAVE_DPAPP=y
+`. This setup doesn't support any switch configuration, so the testability is minimal.
 ![dev-workflow-pymodel](images/dev-workflow-pymodel.svg)
 
 
@@ -66,7 +67,8 @@ Console #1:
     make docker-pymodel-bldr
     make sai TARGET=pymodel
     make docker-dash-dpapp
-    make dpapp check-sai-spec
+    make dpapp 
+    make check-sai-spec
     make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
     make docker-saithrift-client
 
@@ -99,11 +101,6 @@ The tables below summarize the most important `make` targets for the Python mode
 
 Dockerfile build targets are separately described in [README-dash-docker](README-dash-docker.md) since they are mainly for infrastructure and generally not part of day-to-day code and test-case development. The one exception is the [docker-saithrift-client](#build-saithrift-client-docker-image) target.
 
-## Make "ALL" Targets
-| Target(s)              | Description                                                                  |
-| ---------------------- | --------------------------------------------------|
-| [clean](#cleanup)      | Deletes built artifacts and restores distro directories to clean state                    |
-| [kill-all](#stop-containers)             | Stops all running containers                      |
 
 ## Build Artifacts
 | Target(s)              | Description                                                                  |
@@ -116,8 +113,8 @@ Dockerfile build targets are separately described in [README-dash-docker](README
 ## Launch Daemons/Containers
 | Target(s)              | Description                                                                  |
 | ---------------------- | --------------------------------------------------|
-| [pymodel](#run-python-model)<br>[kill-pymodel](#run-python-model) | Run the Python model packet sniffer<br>Stop the Python model process |
-| [run-saithrift-server](#run-saithrift-server)<br>[kill-saithrift-server](#run-saithrift-server) | Run a saithrift server which translates SAI over thrift into P4Runtime<br>Stop the saithrift server container|
+| [run-pymodel HAVE_DPAPP=y](#run-python-model)<br>[make kill-pymodel](#run-python-model) | Run the Python model packet sniffer<br>Stop the Python model process |
+| [ run-saithrift-server TARGET=pymodel](#run-saithrift-server)<br>[ kill-saithrift-server](#run-saithrift-server) | Run a saithrift server which translates SAI over thrift into P4Runtime<br>Stop the saithrift server container|
 
 ## Run Tests
 | Target(s)              | Description                                                                  |
@@ -137,7 +134,6 @@ The workflows described here are primarily driven by a [Makefile](Makefile) and 
 See the [Diagram](#build-workflow-diagram) below. You can read the [dockerfiles](dockerfiles) and all `Makefiles` in various directories to get a deeper understanding of the build process. You generally use the targets from the main [Makefile](Makefile) and not any subordinate ones.
 
 ## Docker Image(s)
->**NOTE** Python model developers generally **don't** need to build Docker images; they are pulled automatically, on-demand, from a registry. Developers who create and maintain the Docker images **do** need to build and push new images.
 
 Several docker images are used to compile artifacts or run processes. These Dockerfiles should not change often and are stored/retrieved from an external docker registry. See [README-dash.docker](README-dash.docker.md) for details. When a Dockerfile does change, it needs to be published in the registry. Dockerfile changes also trigger rebuilds of the docker images in the CI pipeline.
 
@@ -147,7 +143,18 @@ See the diagram below. You can read the [Dockerfile](Dockerfile) and all `Makefi
 
 ![dash-pymodel-thrift-workflow](images/dash-pymodel-thrift-workflow.svg)
 
-## Make Py-Artifacts
+## Generate Python Model Artifacts
+
+```
+make py-artifacts-clean # optional
+make py-artifacts
+```
+The primary outputs of interest are:
+ * `py_model/dash_pipeline.py_model/dash_pipeline_p4rt.json` - the P4Info metadata which describes all the P4 entities (P4 tables, counters, etc.). This metadata is used downstream as follows:
+    * P4Runtime controller used to manage the pipeline. The SAI API adaptor converts SAI library "c" code calls to P4Runtime socket calls.
+    * P4-to-SAI header code generation (see next step below)
+ * `py_model/dash_pipeline.py_model/dash_pipeline_p4rt.txt` - text-based P4Info format
+ * `py_model/dash_pipeline.py_model/dash_pipeline_ir.json` - intermediate representation JSON
 This make target will generate artifacts from the Python model:
 * Generate P4Info JSON and text files from Python model code
 * These artifacts can be used to auto-generate DASH SAI API header files
@@ -155,41 +162,22 @@ This make target will generate artifacts from the Python model:
 * Auto-generate the saithrift server and client framework (server daemon + client libraries) based on the DASH SAI headers
 * Build a saithrift-client Docker image containing all needed tools and test suites
 
-```
-make py-artifacts
-```
-
-## Cleanup
-This will delete all built artifacts, restore the SAI submodule and kill all running containers.
-```
-make py-artifacts-clean
-```
-
 ## Stop Containers
 This will kill one or all containers:
 ```
-make kill            
+make kill
+make kill-dpapp
+make kill-pymodel
 ```
 
-## Generate Python Model Artifacts
-```
-make py-artifacts-clean # optional
-make py-artifacts
-```
 
-The primary outputs of interest are:
- * `py_model/dash_pipeline.py_model/dash_pipeline_p4rt.json` - the P4Info metadata which describes all the P4 entities (P4 tables, counters, etc.). This metadata is used downstream as follows:
-    * P4Runtime controller used to manage the pipeline. The SAI API adaptor converts SAI library "c" code calls to P4Runtime socket calls.
-    * P4-to-SAI header code generation (see next step below)
- * `py_model/dash_pipeline.py_model/dash_pipeline_p4rt.txt` - text-based P4Info format
- * `py_model/dash_pipeline.py_model/dash_pipeline_ir.json` - intermediate representation JSON
 
 ## Build libsai.so adaptor library
 This library is the crucial item to allow integration with a Network Operating System (NOS) like SONiC. It wraps an implementation specific "SDK" with standard Switch Abstraction Interface (SAI) APIs. In this case, an adaptor translates SAI API table/attribute CRUD operations into equivalent P4Runtime RPC calls, which is the native RPC API for the Python model's gRPC server.
 
 ```
 make sai-clean                      # Clean up artifacts and Git Submodule
-make sai                            # Combines steps above
+make sai TARGET=pymodel             # Combines steps above
 ```
 
 These targets generate SAI headers from the P4Info which was described above. It uses [Jinja2](https://jinja.palletsprojects.com/en/3.1.x/) which renders [SAI/templates](SAI/templates) into C++ source code for the SAI headers corresponding to the DASH API as defined in the Python model code. It then compiles this code into a shared library `libsai.so` which will later be used to link to a test server (Thrift) or `syncd` daemon for production.
@@ -220,13 +208,26 @@ You can delete the veth pairs when you're done testing via this command:
 make network-clean
 ```
 
+## Build pymodel docker image
+```
+docker-pymodel-bldr
+```
+
+This will build a docker image which is based python 3.12 and all packages needed to run pymdoel and to talk to the saithrift-server daemon, including:
+* saithrift client libraries (Python)
+* PTF framework from [OCP SAI repo](https://github.com/opencomputeproject/SAI.git), including all test cases
+* The [PTF repo](https://github.com/p4lang/ptf) imported from p4lang
+* Scapy etc.
+
+It also contains all the artifacts under `tests/` which includes PTF test-cases. Thus, it comprises a self-contained test resource with tools, libraries and test scripts.
+
 ## Run Python Model
 This will run the Python model packet sniffer in the foreground. The main process is `main_dash.py` which includes an embedded P4Runtime gRPC server (listening on port 9559) and uses scapy to sniff packets on configured interfaces. This will spew out verbose content when control APIs are called or packets are processed. Use additional terminals to run other test scripts.
 
 >**NOTE:** Stop the process (CTRL-c) to shut down the Python model. You can also invoke `pkill -f main_dash.py` from another terminal or script.
 
 ```
-make pymodel  # launches Python model with packet sniffer
+make run-pymodel HAVE_DPAPP=y
 ```
 
 ## Run saithrift-server
