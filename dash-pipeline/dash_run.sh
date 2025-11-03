@@ -117,11 +117,18 @@ case "$1" in
         sudo make run-dpapp
         ;;
 
-    ptftest)
+    ptf)
         clear
         echo "Running PTF Tests..."
         sudo make docker-saithrift-client
         sudo make run-saithrift-ptftests
+        ;;
+
+    pytests)
+        clear
+        echo "Running Pytests..."
+        sudo make docker-saithrift-client
+        sudo make run-saithrift-pytests
         ;;
 
     bmv2-build)

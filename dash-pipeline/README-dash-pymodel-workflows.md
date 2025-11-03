@@ -14,21 +14,17 @@ See also:
 **Table of Contents**
 - [Concise Developer Workflows](#concise-developer-workflows)
   - [Use Case I - Developing Python Model Code](#use-case-i---developing-python-model-code)
-    - [Sending packets "manually" into the switch](#sending-packets-manually-into-the-switch)
   - [Use-Case II - Developing End-to-End Tests with saithrift PTF](#use-case-ii---developing-end-to-end-tests-with-saithrift-ptf)
   - [Use-Case III - Incremental Test-Case Development](#use-case-iii---incremental-test-case-development)
 - [Make Target Summary](#make-target-summary)
-  - [Make "ALL" Targets](#make-all-targets)
   - [Build Artifacts](#build-artifacts)
   - [Launch Daemons/Containers](#launch-daemonscontainers)
   - [Run Tests](#run-tests)
 - [Detailed Python Model Build Workflow](#detailed-python-model-build-workflow)
   - [Docker Image(s)](#docker-images)
   - [Build Workflow Diagram](#build-workflow-diagram)
-  - [Make Py-Artifacts](#make-py-artifacts)
-  - [Cleanup](#cleanup)
-  - [Stop Containers](#stop-containers)
   - [Generate Python Model Artifacts](#generate-python-model-artifacts)
+  - [Stop Containers](#stop-containers)
   - [Build libsai.so adaptor library](#build-libsaiso-adaptor-library)
   - [Build saithrift-server](#build-saithrift-server)
   - [Create veth pairs for py_model](#create-veth-pairs-for-py_model)
@@ -40,8 +36,6 @@ See also:
 
 # Concise Developer Workflows
 This section gives you a quick idea of how to work on various tasks efficiently with the Python model. The Python model provides an alternative to the bmv2-based switch for faster development cycles and easier debugging.
-
->Do you have another use-case in mind? Help document it with a Pull-Request, or ask the community.
 
 ## Use Case I - Developing Python Model Code
 Developing Python model code requires generating artifacts via `make py-artifacts`. This is very quick since Python code doesn't need compilation. You can run the code via ` make run-pymodel HAVE_DPAPP=y

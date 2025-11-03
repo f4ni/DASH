@@ -4,7 +4,7 @@ This folder contains the Python "py_model" implementation of the DASH pipeline u
 
 Contents (high level)
 - Core model and entrypoints
-  - [`py_model/dash_py_v1model.py`](py_model/dash_py_v1model.py) — contains the Python model entrypoint [`dash_py_v1model.dash_py_model`](py_model/dash_py_v1model.py) and checksum helpers like [`dash_py_v1model.dash_compute_checksum`](py_model/dash_py_v1model.py) and the generated per-underlay functions [`dash_py_v1model.compute_checksum_u0`](py_model/dash_py_v1model.py) and [`dash_py_v1model.compute_checksum_u1`](py_model/dash_py_v1model.py).
+  - [`py_model/dash_py_v1model.py`](py_model/dash_py_v1model.py) — contains the Python model entrypoint.
   - [`py_model/main_dash.py`](py_model/main_dash.py) — CLI/runner used by `make pymodel` and `run.sh`.
 - Control plane (gRPC / P4Runtime helpers)
   - [`py_model/control_plane/grpc_server.py`](py_model/control_plane/grpc_server.py) — lightweight P4Runtime server skeleton including [`grpc_server.P4RuntimeServicer`](py_model/control_plane/grpc_server.py), helpers such as [`grpc_server.populate_tables_actions_ids`](py_model/control_plane/grpc_server.py) and [`grpc_server.pretty_print_proto`](py_model/control_plane/grpc_server.py).
@@ -23,22 +23,22 @@ Contents (high level)
   - Counters and small utilities: [`py_model/libs/__counters.py`](py_model/libs/__counters.py), [`py_model/libs/__utils.py`](py_model/libs/__utils.py)
   - Object class imports that connect modules: [`py_model/libs/__obj_classes.py`](py_model/libs/__obj_classes.py)
 - Scripts and artifact generation
-  - Artifact generator: [`py_model/scripts/artifacts_gen.py`](py_model/scripts/artifacts_gen.py) — optimized generator that produces runtime artifacts (`dash_pipeline_p4rt.json`, `dash_pipeline_p4rt.txt`, and `dash_pipeline_ir.json`) by reflecting over the in-memory Python model. It drives `make py-artifacts`.
+  - Artifact generator: [`py_model/scripts/artifacts_gen.py`](py_model/scripts/artifacts_gen.py) — optimized generator that produces runtime artifacts (`dash_pipeline_p4rt.json`, `dash_pipeline_p4rt.txt`, and `dash_pipeline_ir.json`) by reflecting over the in-memory Python model.
   - Call graph and codegen helpers: [`py_model/scripts/call_graph.py`](py_model/scripts/call_graph.py), [`py_model/scripts/gen_table_chain.py`](py_model/scripts/gen_table_chain.py), etc.
 - Generated artifacts
-  - Pre-generated outputs are under [`py_model/dash_pipeline.py_model/`](py_model/dash_pipeline.py_model) (e.g. `dash_pipeline_p4rt.json`, `dash_pipeline_p4rt.txt`) used by CI or offline tools.
+  - Pre-generated outputs are under [`py_model/dash_pipeline.py_model/`](py_model/dash_pipeline.py_model) (e.g. `dash_pipeline_p4rt.json`, `dash_pipeline_p4rt.txt`) used by saithrift-server and dpapp.
 
 How it fits together (brief)
 - The `dash_py_v1model.dash_py_model` function is the high-level packet processing entry that builds headers/metadata and calls the pipeline (`dash_pipeline` modules).
 - The pipeline is organized into stages (seen in `py_model/data_plane/stages/*`) which model table lookups and actions. A stage exposes an `apply()` method (for example [`outbound_routing_stage.apply`](py_model/data_plane/stages/outbound_routing.py)) that performs the table lookup logic, counters and potential packet drop or forwarding decisions.
-- Routing transformations and NAT/encap actions are implemented in `py_model/data_plane/routing_actions/*` and applied from [`py_model/data_plane/stages/routing_action_apply.py`](py_model/data_plane/stages/routing_action_apply.py).
+- Routing transformations and NAT/encap actions are implemented in `py_model/data_plane/routing_actions/*`.
 - The control-plane helper (`grpc_server.py`) can load P4Info-like JSON and populate maps of table/action/counter IDs (`grpc_server.populate_tables_actions_ids`) so the test server can simulate control operations.
 
 Quick start
 - Generate py-model artifacts:
   - Run the artifact generator: `python3 -m py_model.scripts.artifacts_gen` (same as `make py-artifacts`). See [`py_model/scripts/artifacts_gen.py`](py_model/scripts/artifacts_gen.py).
 - Run the python model interactively:
-  - Use the runner: `python3 -m py_model.main_dash` (see [`py_model/main_dash.py`](py_model/main_dash.py)).
+  - Use the runner: `make pymodel` (see [`py_model/main_dash.py`](py_model/main_dash.py)).
 - Launch the P4Runtime test server/sniffer (if used):
   - Start the server: call [`grpc_server.serve`](py_model/control_plane/grpc_server.py) or run the server module.
 
@@ -58,5 +58,5 @@ Useful files (quick links)
 - Control plane server: [`py_model/control_plane/grpc_server.py`](py_model/control_plane/grpc_server.py)
 
 Where to look next
-- If you want to extend tables or behavioral logic, add/modify tables in `py_model/data_plane/stages/*` and adjust codegen in `py_model/scripts/artifacts_gen.py`.
+- If you want to extend tables or behavioral logic, add/modify tables in `py_model/data_plane/stages/*` and adjust artifact generation logic in `py_model/scripts/artifacts_gen.py`.
 - If you need to adapt the control-plane mapping, modify [`py_model/control_plane/grpc_server.py`](py_model/control_plane/grpc_server.py) and [`py_model/libs/__id_map.py`](py_model/libs/__id_map.py).

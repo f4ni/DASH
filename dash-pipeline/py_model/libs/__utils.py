@@ -55,7 +55,7 @@ def py_log(level=None, *args, **kwargs):
         logging.debug(message, stacklevel=2)
     elif level == "info":
         logging.info(message, stacklevel=2)
-    elif level == "warning":
+    elif level == "warn":
         logging.warning(message, stacklevel=2)
     elif level == "error":
         logging.error(message, stacklevel=2)
