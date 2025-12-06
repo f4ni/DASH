@@ -8,9 +8,9 @@ from py_model.libs.__utils import py_log, standard_metadata
 
 iface_list = []
 
-def sniff_packet() -> None:
+def process_packet() -> None:
     """Capture packets on configured interfaces and process them."""
-    def process_packet(pkt: Ether) -> None:
+    def process(pkt: Ether) -> None:
         raw_bytes = bytes(pkt)
         py_log("info", f"Processing packet received on {pkt.sniffed_on}")
 
@@ -28,7 +28,7 @@ def sniff_packet() -> None:
         else:
             py_log("warn", f"Egress port index {egress_idx} out of range — dropping packet.")
 
-    sniff(iface=iface_list, prn=process_packet, store=False, filter="inbound")
+    sniff(iface=iface_list, prn=process, store=False, filter="inbound")
 
 
 def setup_interfaces(args: list[str]) -> None:
@@ -55,7 +55,7 @@ def main() -> None:
     server_thread.start()
 
     # Start packet sniffer
-    sniff_thread = threading.Thread(target=sniff_packet, daemon=True)
+    sniff_thread = threading.Thread(target=process_packet, daemon=True)
     sniff_thread.start()
 
     # Graceful shutdown handler

@@ -40,7 +40,7 @@ class do_action_encap_u0:
     def apply(cls):
         if (meta.routing_actions & dash_routing_actions_t.ENCAP_U0) == 0:
             return
-        
+
         if meta.u0_encap_data.dash_encapsulation == dash_encapsulation_t.VXLAN:
             push_vxlan_tunnel_u0(meta.u0_encap_data.underlay_dmac,
                                  meta.u0_encap_data.underlay_smac,

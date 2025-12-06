@@ -211,6 +211,8 @@ class SaiThriftDpappPktTest(SaiHelperSimplified):
         self.pkt_exp = vxlan_exp_pkt
         print("\tSending outbound udp packet...")
         send_packet(self, 0, vxlan_pkt)
+        print("\tSending subsequent outbound udp packet...")
+        send_packet(self, 0, vxlan_pkt)
         print("\tVerifying packet...")
         verify_packet(self, self.pkt_exp, 0)
         print("\tVerifying flow created...")

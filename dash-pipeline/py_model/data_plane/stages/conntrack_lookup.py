@@ -1,5 +1,10 @@
+from threading import Timer
 from py_model.libs.__utils import *
 from py_model.libs.__table import *
+from py_model.libs.__flow_timer import *
+from py_model.libs.__flow import populate_entry
+from py_model.data_plane.defines import TIME_OUT_MANAGER, FLOW_AGEOUT_TIME
+
 
 def conntrack_set_meta_from_dash_header():
     # basic metadata
@@ -124,14 +129,28 @@ class conntrack_flow_miss_handle():
         py_log("info", "conntrack_flow_miss_handle")
         # SYN
         if (hdr.customer_tcp and hdr.customer_tcp.flags == 0x2) or hdr.customer_udp:
-            conntrack_build_dash_header.apply(dash_packet_subtype_t.FLOW_CREATE)
-            meta.to_dpapp = True    # trap to dpapp
+            if TIME_OUT_MANAGER:
+                meta.to_dpapp = False
+                meta.flow_sync_state = dash_flow_sync_state_t.FLOW_CREATED
+                hash, entry = populate_entry()
+                conntrack_lookup_stage.flow_entry.insert(hash, entry)
+                flow_timeout_mgr.add_or_refresh(hash, FLOW_AGEOUT_TIME)
+                py_log("info", f"Entry added in 'flow_entry', entry_cnt : {conntrack_lookup_stage.flow_entry.entry_cnt}\n")
+            else:
+                conntrack_build_dash_header.apply(dash_packet_subtype_t.FLOW_CREATE)
+                meta.to_dpapp = True    # trap to dpapp
             return
         # FIN/RST
-        elif ((hdr.customer_tcp.flags & 0b000101) != 0) and (hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP):
-            # Flow should be just deleted by dpapp
-            conntrack_set_meta_from_dash_header()
-            return
+        elif ((hdr.customer_tcp.flags & 0b000101) != 0):
+            if (hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP):
+                # Flow should be just deleted by dpapp
+                conntrack_set_meta_from_dash_header()
+                return
+            elif TIME_OUT_MANAGER:
+                hash, entry = populate_entry()
+                flow_timeout_mgr.remove(hash)
+                py_log("info", f"Entry deleted from 'flow_entry', entry_cnt : {conntrack_lookup_stage.flow_entry.entry_cnt}\n")
+                return
 
         # should not reach here
         meta.dropped = True  # drop it
@@ -142,9 +161,17 @@ class conntrack_flow_created_handle():
         py_log("info", "conntrack_flow_created_handle")
         if hdr.customer_tcp:
             if (hdr.customer_tcp.flags & 0b000101) != 0:    # FIN/RST
-                conntrack_build_dash_header.apply(dash_packet_subtype_t.FLOW_DELETE)
-                meta.to_dpapp = True
-                return
+                if TIME_OUT_MANAGER:
+                    meta.flow_sync_state = dash_flow_sync_state_t.FLOW_PENDING_DELETE
+                    hash, entry = populate_entry()
+                    flow_timeout_mgr.remove(hash)
+                    conntrack_lookup_stage.flow_entry.delete(hash)
+                    py_log("info", f"Entry deleted from 'flow_entry', entry_cnt : {conntrack_lookup_stage.flow_entry.entry_cnt}\n")
+                    return
+                else:
+                    conntrack_build_dash_header.apply(dash_packet_subtype_t.FLOW_DELETE)
+                    meta.to_dpapp = True
+                    return
         # TODO update flow timestamp for aging
 
 class conntrack_flow_handle():
@@ -392,8 +419,24 @@ class conntrack_lookup_stage:
             cls.set_flow_key(flow_enabled_key)
 
         py_log("info", "Applying table 'flow_entry' ")
-        cls.flow_entry.apply()
+        result = cls.flow_entry.apply()
+
+        if result["hit"] and TIME_OUT_MANAGER:
+            # Find the hash corresponding to the entry
+            for hash, entry in cls.flow_entry.entries.items():
+                if entry == result["entry"]:
+                    # Refresh timeout for this flow
+                    flow_timeout_mgr.add_or_refresh(hash, FLOW_AGEOUT_TIME)
+                    break
+
         py_log("info", "Applying table 'flow_entry_bulk_get_session_filter'")
         cls.flow_entry_bulk_get_session_filter.apply()
         py_log("info", "Applying table 'flow_entry_bulk_get_session'")
         cls.flow_entry_bulk_get_session.apply()
+
+
+if TIME_OUT_MANAGER:
+    flow_timeout_mgr = FlowTimeoutManager(
+        conntrack_lookup_stage.flow_entry,
+        default_ttl=FLOW_AGEOUT_TIME
+    )

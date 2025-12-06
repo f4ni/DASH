@@ -154,7 +154,6 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
     action_id = insertRequest.action
     if action_id is not None:
         action_name = get_action_name(action_id)
-        py_log(f"Action: {action_name}")
         action_obj = resolve_action_name(action_name)
         if not action_obj:
             py_log("info", f"Could not resolve action name: {action_name}")
@@ -165,7 +164,7 @@ def populate_table_entry(insertRequest: InsertRequest, key_format: list):
 
     return entry
 
-def table_insert_api(insertRequest: InsertRequest, obj_type, hash):
+def insert_entry(insertRequest: InsertRequest, obj_type, hash):
     table_name = get_table_name(insertRequest.table)
     if table_name == "unknown":
         return RETURN_FAILURE
@@ -181,25 +180,54 @@ def table_insert_api(insertRequest: InsertRequest, obj_type, hash):
     if obj_type == 'INSERT':
         if hash in table.entries:
             py_log("info", "Matching entry exists, use MODIFY if you wish to change action")
-            return RETURN_FAILURE
+            return ALREADY_EXISTS
         table.insert(hash, entry)
-        # py_log("info", f"Entry {table.entry_cnt - 1} added to table '{table_name}'")
     elif obj_type == 'MODIFY':
         ret = table.update(hash, entry)
     else:
-        py_log("info", f"Unknown operation type: {obj_type}")
+        py_log("info", f"Entry Modification failed")
         return RETURN_FAILURE
 
     return RETURN_SUCCESS
 
-def parse_insert_request(json_obj, obj_type):
+
+def read_entry(hash, table_id):
+    table_name = get_table_name(table_id)
+    if table_name == "unknown":
+        return RETURN_FAILURE
+
+    table = resolve_table_name(table_name)
+    if not table or not table.key:
+        return RETURN_FAILURE
+
+    entry = table.entries.get(hash)
+    if not entry:
+        return RETURN_FAILURE
+
+    return entry
+
+
+def hash_from_match(table_entry):
+    match = table_entry.get("match", {})
+    return hashlib.sha256(str(match).encode()).hexdigest()
+
+
+def parse_read_request(json_obj):
+    table_entry = normalize_table_entry(
+        json_obj.get("tableEntry", {})
+    )
+
+    return hash_from_match(table_entry)
+
+
+def parse_write_request(json_obj, obj_type):
     insertRequest = InsertRequest()
 
     table_entry = normalize_table_entry(
         json_obj.get("entity", {}).get("tableEntry", {})
     )
-    match = table_entry.get("match", {})
-    hash_val = hashlib.sha256(str(match).encode()).hexdigest()
+
+    hash_val = hash_from_match(table_entry)
 
     insertRequest.table = table_entry.get("tableId", [])
     table_name = get_table_name(insertRequest.table)
@@ -271,6 +299,7 @@ def parse_insert_request(json_obj, obj_type):
 
     action_data = table_entry.get("action", {}).get("action", {})
     insertRequest.action = action_data.get("actionId", None)
+    action_name = get_action_name(insertRequest.action)
 
     if insertRequest.action is not None:
         insertRequest.params = [
@@ -278,6 +307,6 @@ def parse_insert_request(json_obj, obj_type):
             for p in action_data.get("params", [])
         ]
 
-    py_log(None, f"Action entry: {table_name} - {insertRequest.params}")
+    py_log(None, f"Action entry: {action_name} - {insertRequest.params}\n")
 
     return insertRequest, hash_val

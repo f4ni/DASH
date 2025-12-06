@@ -254,7 +254,6 @@ class dash_ingress:
             conntrack_lookup_stage.apply()
 
         ha_stage.apply()
-        
 
         if (not meta.flow_enabled or
            (meta.flow_sync_state == dash_flow_sync_state_t.FLOW_MISS and
@@ -270,7 +269,7 @@ class dash_ingress:
 
         if meta.flow_enabled:
             conntrack_flow_handle.apply()
-            
+
             if meta.to_dpapp:
                 if TARGET == TARGET_PYTHON_V1MODEL:
                     standard_metadata.egress_spec = 2  # FIXME hard-code vpp port
@@ -279,7 +278,7 @@ class dash_ingress:
                 return
         else:
             hdr.packet_meta = None
-        
+
         routing_action_apply.apply()
 
         # Underlay routing: using meta.dst_ip_addr as lookup key
@@ -289,7 +288,6 @@ class dash_ingress:
             meta.dst_ip_addr = hdr.u0_ipv4.dst_addr
 
         underlay.apply()
-        
 
         if meta.eni_data.dscp_mode == dash_tunnel_dscp_mode_t.PIPE_MODEL:
             hdr.u0_ipv4.diffserv = meta.eni_data.dscp

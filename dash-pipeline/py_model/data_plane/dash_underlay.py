@@ -1,5 +1,6 @@
 from py_model.libs.__utils import *
 from py_model.libs.__table import *
+from py_model.data_plane.defines import TIME_OUT_MANAGER
 
 # The values in this context have been sourced from the 'saiswitch.h' file and 
 # have been manually designated to maintain alignment with enum values specified in the SAI commit <d8d40b4>.
@@ -27,8 +28,8 @@ class underlay:
     @staticmethod
     def def_act():
         if TARGET == TARGET_PYTHON_V1MODEL:
-            # if hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP:
-            if hdr.packet_meta and (hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP):
+            # if hdr.packet_meta and (hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP):
+            if hdr.packet_meta and ((hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP) or TIME_OUT_MANAGER == 1):
                 standard_metadata.egress_spec = 0; # FIXME
             else:
                 standard_metadata.egress_spec = standard_metadata.ingress_port

@@ -19,6 +19,7 @@ PNA_CONNTRACK               = 0
 
 RETURN_SUCCESS = 0
 RETURN_FAILURE = -1
+ALREADY_EXISTS = 1
 
 
 hdr = headers_t()

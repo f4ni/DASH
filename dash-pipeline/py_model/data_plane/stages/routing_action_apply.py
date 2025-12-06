@@ -9,7 +9,7 @@ from py_model.data_plane.routing_actions.routing_action_set_mac import *
 class routing_action_apply:
     @classmethod
     def apply(cls):
-        py_log("info", "routing_action_apply")
+        py_log("info", "Applying routing actions")
         do_action_nat46.apply()
         do_action_nat64.apply()
         do_action_snat_port.apply()

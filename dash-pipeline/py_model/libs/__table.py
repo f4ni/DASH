@@ -218,7 +218,7 @@ class Table:
         py_log("info", f"Action entry: {action.__name__}\n")
 
         action(*params)
-        return {"hit": bool(entry), "action_run": action}
+        return {"hit": bool(entry), "action_run": action, "entry": entry if entry else None}
 
     def __match_entry(self, entry: Entry):
         for idx, (k, match_routine) in enumerate(self.key.items()):

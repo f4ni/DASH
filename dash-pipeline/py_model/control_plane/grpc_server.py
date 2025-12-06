@@ -5,6 +5,7 @@ import google.protobuf.json_format as json_format
 from concurrent import futures
 from p4.v1 import p4runtime_pb2
 from p4.v1 import p4runtime_pb2_grpc
+from py_model.libs.__utils import *
 from py_model.libs.__id_map import *
 from py_model.control_plane.control_plane import *
 
@@ -82,7 +83,6 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
 
     def Write(self, request, context):
         # pretty_print_proto(request, "Write Request")
-
         for idx, update in enumerate(request.updates):
             try:
                 # Convert Protobuf message to JSON
@@ -92,49 +92,30 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
                 table_entry = update.entity.table_entry
                 table_id = table_entry.table_id
 
-                if table_id not in table_entries:
-                    table_entries[table_id] = []
+                ins_req, hash = parse_write_request(update_dict, obj_type)
+                if ins_req is None:
+                    break
 
-                ins_req, hash = parse_insert_request(update_dict, obj_type)
-                if obj_type == "DELETE":
-                    # Remove matching entry by comparing match fields
-                    removed = False
-                    for i, existing_entry in enumerate(table_entries[table_id]):
-                        if existing_entry.match == table_entry.match:
-                            del table_entries[table_id][i]
-                            removed = True
-                            break
-                    if not removed:
-                        py_log("info", f"[P4Runtime] Delete target not found in table {table_id}")
-                else:
-                    ret = table_insert_api(ins_req, obj_type, hash)
-                    if ret == RETURN_FAILURE:
-                        py_log("error", f"[P4Runtime] Entry already exists, skipping update [{idx}]")
-                        context.abort(
-                            grpc.StatusCode.ALREADY_EXISTS,
-                            f"Error processing update [{idx}]"
-                        )
-
-                    if obj_type == "INSERT":
-                        table_entries[table_id].append(table_entry)
-
-                    elif obj_type == "MODIFY":
-                        # Find matching entry by comparing match fields
-                        replaced = False
-                        for i, existing_entry in enumerate(table_entries[table_id]):
-                            if existing_entry.match == table_entry.match:
-                                table_entries[table_id][i] = table_entry
-                                replaced = True
-                                # py_log("info", f"[P4Runtime] Modified entry in table {table_id}")
-                                break
-                        if not replaced:
-                            py_log("info", f"[P4Runtime] Modify target not found, inserting instead")
-                            table_entries[table_id].append(table_entry)
+                ret = insert_entry(ins_req, obj_type, hash)
+  
             except Exception as e:
-                py_log("error", "[P4Runtime] Error processing update [{idx}]: {e}")
+                py_log("error", f"[P4Runtime] Error processing update [{idx}]: {e}")
                 context.abort(
-                    grpc.StatusCode.INVALID_ARGUMENT,
+                    grpc.StatusCode.UNKNOWN,
                     f"Error processing update [{idx}]: {e}"
+                )
+
+            if ret == RETURN_FAILURE:
+                py_log("error", f"[P4Runtime] Write Request [{idx}] failed, skipping write table: {table_id}")
+                context.abort(
+                    grpc.StatusCode.ABORTED,
+                    f"Error processing update [{idx}]: {e}"
+                )
+            elif ret == ALREADY_EXISTS:
+                py_log("error", f"[P4Runtime] Entry already exists, skipping update [{idx}]")
+                context.abort(
+                    grpc.StatusCode.ALREADY_EXISTS,
+                    f"Entry [{idx}] already exists"
                 )
 
         return p4runtime_pb2.WriteResponse()
@@ -145,35 +126,31 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
             py_log("error", f"[P4Runtime] Pipeline config not set")
             context.abort(grpc.StatusCode.FAILED_PRECONDITION, "Pipeline config not set")
 
-        for entity in request.entities:
-            if entity.WhichOneof("entity") == "table_entry":
-                table_entry = entity.table_entry
-                table_id = table_entry.table_id
+        for idx, entity in enumerate(request.entities):
+            try:
+                entity_dict = json.loads(json_format.MessageToJson(entity))
 
-                found = False
-                if table_id in table_entries and table_entries[table_id]:
-                    for stored_entry in table_entries[table_id]:
-                        # Convert stored_entry.match into list of dicts
-                        stored_entry_json = [json_format.MessageToDict(m) for m in stored_entry.match]
-                        stored_entry_json = sorted(stored_entry_json, key=lambda m: m.get("fieldId", 0))
+                table_id = entity.table_entry.table_id
+                hash = parse_read_request(entity_dict)
 
-                        # Convert table_entry.match into list of dicts
-                        table_entry_json = [json_format.MessageToDict(m) for m in table_entry.match]
-                        table_entry_json = sorted(table_entry_json, key=lambda m: m.get("fieldId", 0))
-
-                        # Now compare normalized dicts
-                        if stored_entry_json == table_entry_json:
-                            found = True
-                            yield p4runtime_pb2.ReadResponse(
-                                entities=[
-                                    p4runtime_pb2.Entity(
-                                        table_entry=stored_entry
-                                    )
-                                ]
+                ret = read_entry(hash, table_id)
+                if ret == RETURN_FAILURE:
+                    py_log("error", f"[P4Runtime] Entry not found, skipping read table: {table_id}")
+                else:
+                    yield p4runtime_pb2.ReadResponse(
+                        entities=[
+                            p4runtime_pb2.Entity(
+                                table_entry=entity.table_entry
                             )
-                            break
-                if not found:
-                    py_log("error", "[P4Runtime] Cannot find match entry")
+                        ]
+                    )
+                    break
+            except Exception as e:
+                py_log("error", f"[P4Runtime] Error processing update [{idx}]: {e}")
+                context.abort(
+                    grpc.StatusCode.INVALID_ARGUMENT,
+                    f"Error processing update [{idx}]: {e}"
+                )
 
     # Handles bi-directional communication (StreamChannel)
     def StreamChannel(self, request_iterator, context):
@@ -202,7 +179,7 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
         return iter([])
 
 
-# Start the gRPC server and sniffer
+# Start the gRPC server
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     p4runtime_pb2_grpc.add_P4RuntimeServicer_to_server(P4RuntimeServicer(), server)

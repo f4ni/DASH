@@ -84,6 +84,7 @@ def use_flow(cls):
     def tearDown(self, *args, **kwargs):
         print(f'*** Disable Flow lookup')
         table.set(flow_enabled = 0)
+        table.unset()
         if _tearDown is not None:
             _tearDown(self, *args, **kwargs)
         return
