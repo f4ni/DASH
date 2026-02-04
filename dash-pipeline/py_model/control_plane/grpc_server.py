@@ -203,12 +203,12 @@ class P4RuntimeServicer(p4runtime_pb2_grpc.P4RuntimeServicer):
 
 
 # Start the gRPC server and sniffer
-def serve():
+def serve(port=9559):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     p4runtime_pb2_grpc.add_P4RuntimeServicer_to_server(P4RuntimeServicer(), server)
-    server.add_insecure_port("[::]:9559")
+    server.add_insecure_port(f"[::]:{port}")
     server.start()
-    py_log(None, "Server listening on 0.0.0.0:9559\n")
+    py_log(None, f"Server listening on 0.0.0.0:{port}\n")
 
     try:
         while True:

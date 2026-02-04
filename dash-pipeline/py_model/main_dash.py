@@ -37,7 +37,7 @@ def setup_interfaces(args: list[str]) -> None:
         py_log(None, "\nUsage: python3 -m py_model.main_dash '<IFACE0>' '<IFACE1>' ['<IFACE2>']")
         sys.exit(1)
 
-    iface_list.extend(args[1:4])  # add 2 or 3 interfaces
+    iface_list.extend(args[1:5])  # add 2 or 3 interfaces
     py_log(None, "")  # blank line for readability
 
     for idx, iface in enumerate(iface_list):
@@ -48,10 +48,42 @@ def setup_interfaces(args: list[str]) -> None:
 
 def main() -> None:
     """Main entry point for running the DASH Python model."""
-    setup_interfaces(sys.argv)
+    
+    # Parse generic arguments
+    grpc_port = 9559
+    ha_role = None
+    args = []
+    
+    # Simple argument parsing
+    i = 0
+    while i < len(sys.argv):
+        if sys.argv[i] == "--port":
+            if i + 1 < len(sys.argv):
+                grpc_port = int(sys.argv[i+1])
+                i += 2
+            else:
+                py_log(None, "Error: --port requires an argument")
+                sys.exit(1)
+        elif sys.argv[i] == "--role":
+            if i + 1 < len(sys.argv):
+                ha_role = sys.argv[i+1].lower()
+                i += 2
+            else:
+                py_log(None, "Error: --role requires an argument")
+                sys.exit(1)
+        else:
+            args.append(sys.argv[i])
+            i += 1
+            
+    if ha_role:
+        import os
+        os.environ["DASH_HA_ROLE"] = ha_role
+        py_log(None, f"HA Role set to: {ha_role} (Env: DASH_HA_ROLE)")
+
+    setup_interfaces(args)
 
     # Start gRPC server
-    server_thread = threading.Thread(target=serve, daemon=True)
+    server_thread = threading.Thread(target=serve, args=(grpc_port,), daemon=True)
     server_thread.start()
 
     # Start packet sniffer

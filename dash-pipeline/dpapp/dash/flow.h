@@ -154,6 +154,9 @@ typedef struct dash_flow_entry {
         encap_data_t           flow_u1_encap_data;
     };
 
+    /* NEW: Track sync state (CREATED vs SYNCED) */
+    u8 sync_state; 
+
     u32 index;
 
     /* timers */

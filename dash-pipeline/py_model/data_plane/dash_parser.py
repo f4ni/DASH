@@ -115,6 +115,11 @@ def _dash_parser(packet: packet_in, hdr: headers_t, state: State):
                 #  Flow create/update/delete, extract flow_key
                 hdr.flow_key = packet.extract(flow_key_t)
 
+
+            # if (hdr.packet_meta.packet_subtype == dash_packet_subtype_t.FLOW_CREATE
+            #     or hdr.packet_meta.packet_subtype == dash_packet_subtype_t.FLOW_UPDATE
+            #     or hdr.packet_meta.packet_subtype == dash_packet_subtype_t.FLOW_DELETE):
+            #     #  Flow create/update/delete, extract flow_data
             if hdr.packet_meta.packet_subtype == dash_packet_subtype_t.FLOW_DELETE:
                 #  Flow delete, extract flow_data
                 hdr.flow_data = packet.extract(flow_data_t)

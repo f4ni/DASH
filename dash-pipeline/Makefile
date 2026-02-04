@@ -198,12 +198,14 @@ py-artifacts:
 py-artifacts-clean:
 	rm -rf $(PY_OUTDIR)
 
+STBY_HA = veth6
+
 .PHONY:run-pymodel
 run-pymodel: network
 	$(DOCKER_PY_RUN) \
-		--name dash-pymodel-$(USER) \
+		--name $(or $(CONTAINER_NAME),dash-pymodel-$(USER)) \
 		$(DOCKER_PYMODEL_RUN_IMG) \
-		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK) 
+		python3 -m py_model.main_dash $(IFACE0) $(IFACE1) $(DPAPP_LINK) $(STBY_HA) $(PY_ARGS) 
 
 kill-pymodel:
 	-docker kill dash-pymodel-$(USER)

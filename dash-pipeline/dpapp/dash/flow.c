@@ -48,6 +48,7 @@ dash_flow_get_by_index (u32 index)
     return flow;
 }
 
+
 static int
 dash_flow_create (dash_flow_table_t *flow_table, const dash_header_t *dh)
 {
@@ -60,6 +61,12 @@ dash_flow_create (dash_flow_table_t *flow_table, const dash_header_t *dh)
     ASSERT_MSG(length >= offsetof(dash_header_t, flow_overlay_data), "dash header not enough");
 
     dash_flow_entry_t* flow = dash_flow_alloc();
+
+    if (dh->packet_meta.packet_type == FLOW_SYNC_REQ) {
+        flow->sync_state = SAI_DASH_FLOW_SYNC_STATE_FLOW_SYNCED;
+    } else {
+        flow->sync_state = SAI_DASH_FLOW_SYNC_STATE_FLOW_CREATED;
+    }
 
     clib_memcpy_fast(&flow->key, &dh->flow_key, sizeof(dh->flow_key));
 
@@ -94,6 +101,20 @@ dash_flow_create (dash_flow_table_t *flow_table, const dash_header_t *dh)
         clib_memcpy_fast(&flow->flow_u1_encap_data, &dh->flow_u1_encap_data, sizeof(dh->flow_u1_encap_data));
     }
 
+    // START CHANGE: Determine Sync State
+    // Check packet type from DASH header
+    u8 packet_type = dh->packet_meta.packet_type;
+    if (packet_type == FLOW_SYNC_REQ) {
+        // We are Standby receiving a sync request. 
+        // Create the flow immediately as SYNCED.
+        flow->sync_state = SAI_DASH_FLOW_SYNC_STATE_FLOW_SYNCED;
+    } else {
+        // We are Active receiving a regular packet.
+        // Create as CREATED (waiting for sync).
+        flow->sync_state = SAI_DASH_FLOW_SYNC_STATE_FLOW_CREATED;
+    }
+    // END CHANGE
+
     r = dash_flow_table_add_entry (flow_table, flow);
     if (r != 0) goto table_add_entry_fail;
 
@@ -118,7 +139,41 @@ table_add_entry_fail:
 static int
 dash_flow_update (dash_flow_table_t *flow_table, const dash_header_t *dh)
 {
-    return -1; /* TODO later */
+    sai_status_t status;
+    dash_flow_hash_key_t flow_hash_key;
+    dash_flow_entry_t* flow;
+
+    ASSERT(flow_table && dh);
+
+    if (dh->packet_meta.packet_type != FLOW_SYNC_ACK) {
+        return -1; // We only handle ACKs for now
+    }
+    // 2. Lookup the existing flow
+    u16 length = ntohs(dh->packet_meta.length);
+    // Ensure length is sufficient for key...
+    
+    bzero(&flow_hash_key, sizeof(flow_hash_key));
+    clib_memcpy_fast(&flow_hash_key, &dh->flow_key, sizeof(dh->flow_key));
+    flow = dash_flow_table_lookup_entry(flow_table, &flow_hash_key.key);
+    if (!flow) {
+        // Flow might have aged out or invalid ACK logic
+        return -1; 
+    }
+    // 3. Update State
+    if (flow->sync_state != SAI_DASH_FLOW_SYNC_STATE_FLOW_SYNCED) {
+        flow->sync_state = SAI_DASH_FLOW_SYNC_STATE_FLOW_SYNCED;
+        
+        // 4. Push update to SAI
+        status = dash_sai_update_flow_entry(flow);
+        if (status != SAI_STATUS_SUCCESS) {
+            // Log error
+            return -1;
+        }
+        
+        // Optional: Update stats
+        flow_table->flow_stats.create_ok++; // Reuse or add new stat for updates
+    }
+    return 0;
 }
 
 static int

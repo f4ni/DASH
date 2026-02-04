@@ -244,17 +244,25 @@ class dash_ingress:
             meta.u1_encap_data = encap_data_t()
             meta.overlay_data = overlay_rewrite_data_t()
 
-        # If packet is from DPAPP, not do common lookup
-        if hdr.packet_meta.packet_source != dash_packet_source_t.DPAPP:
-            dash_lookup_stage.apply()
+        # # If packet is from DPAPP, not do common lookup
+        # if hdr.packet_meta.packet_source != dash_packet_source_t.DPAPP:
+        #     dash_lookup_stage.apply()
+
+        # If packet is from DPAPP or PEER, enable flow lookup
+        if hdr.packet_meta.packet_source in (
+            dash_packet_source_t.DPAPP,
+            dash_packet_source_t.PEER
+        ):
+            meta.flow_enabled = True
         else:
+            dash_lookup_stage.apply()
             meta.flow_enabled = True
 
         if meta.flow_enabled:
             conntrack_lookup_stage.apply()
 
         ha_stage.apply()
-        
+        print(f"\nstandard_metadata.egress_spec: {standard_metadata.egress_spec}\n")
 
         if (not meta.flow_enabled or
            (meta.flow_sync_state == dash_flow_sync_state_t.FLOW_MISS and
@@ -279,7 +287,7 @@ class dash_ingress:
                 return
         else:
             hdr.packet_meta = None
-        
+
         routing_action_apply.apply()
 
         # Underlay routing: using meta.dst_ip_addr as lookup key
@@ -288,8 +296,13 @@ class dash_ingress:
         elif meta.routing_actions & dash_routing_actions_t.ENCAP_U0 != 0:
             meta.dst_ip_addr = hdr.u0_ipv4.dst_addr
 
+        print(f"\nstandard_metadata.egress_spec: {standard_metadata.egress_spec}\n")
+
         underlay.apply()
-        
+
+        if hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_REQ:
+            standard_metadata.egress_spec = 3
+        print(f"\nstandard_metadata.egress_spec: {standard_metadata.egress_spec}\n")
 
         if meta.eni_data.dscp_mode == dash_tunnel_dscp_mode_t.PIPE_MODEL:
             hdr.u0_ipv4.diffserv = meta.eni_data.dscp

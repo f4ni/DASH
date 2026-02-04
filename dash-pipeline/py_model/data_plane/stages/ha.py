@@ -89,6 +89,15 @@ class ha_stage:
 
     @classmethod
     def apply(cls):
+        print(f"\n\nmeta.ha.ha_scope_id: {meta.ha.ha_scope_id}")
+        print(f"meta.ha.ha_set_id: {meta.ha.ha_set_id}")
+
+        meta.ha.ha_scope_id = 1
+        meta.ha.ha_set_id = 1
+
+        print(f"meta.ha.ha_scope_id: {meta.ha.ha_scope_id}")
+        print(f"meta.ha.ha_set_id: {meta.ha.ha_set_id}\n\n")
+
         # If HA scope id is not set, then HA is not enabled.
         if meta.ha.ha_scope_id == 0:
             return
@@ -103,3 +112,98 @@ class ha_stage:
         cls.ha_set.apply()
 
         # TODO: HA state machine handling.
+
+        meta.ha.ha_role = 1
+        print(f"\n\n meta.ha.ha_role: {meta.ha.ha_role} \n\n")
+        # If HA not enabled or role not ACTIVE/STANDBY, nothing to do
+        if meta.ha.ha_role not in (dash_ha_role_t.ACTIVE, dash_ha_role_t.STANDBY):
+            return
+
+        from py_model.data_plane.stages.conntrack_lookup import (
+            conntrack_build_dash_header,
+            conntrack_set_meta_from_dash_header,
+        )
+
+        # ========== ACTIVE SIDE: Send FLOW_SYNC_REQ ==========
+        # HLD Step 3: After DPAPP creates flow and recirculates packet (packet_source=DPAPP),
+        # if flow is FLOW_CREATED and ENI is flow owner, transform to FLOW_SYNC_REQ
+        if (meta.ha.ha_role == dash_ha_role_t.ACTIVE and
+            meta.flow_sync_state == dash_flow_sync_state_t.FLOW_CREATED and
+            hdr.packet_meta and
+            hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP):
+            # TODO: Also check meta.eni_data.is_ha_flow_owner == 1 when that's implemented
+            
+            py_log("info", "HA: Active DPU transforming packet to FLOW_SYNC_REQ")
+            
+            # Build DASH header with FLOW_SYNC_REQ type
+            conntrack_build_dash_header.apply(
+                packet_subtype=dash_packet_subtype_t.FLOW_CREATE,
+                packet_type=dash_packet_type_t.FLOW_SYNC_REQ,
+                packet_source=dash_packet_source_t.PEER,  # On wire, it's from PEER
+            )
+            
+            # Set packet_source to PEER for routing (HLD requirement)
+            hdr.packet_meta.packet_source = dash_packet_source_t.PEER
+            
+            # Route to peer DPU via HA data plane channel
+            # Set destination to peer IP (from HA set)
+            # if meta.ha.peer_ip != 0:
+            if meta.ha.peer_ip == 0:
+                # For now, use a simple approach: set egress port for HA link
+                # In full implementation, you'd set underlay routing to peer_ip
+                standard_metadata.egress_spec = 3  # HA link port (adjust as needed)
+                print("\nSetting port to 3\n")
+            
+            # Don't strip dash header - it needs to go to peer
+            meta.to_dpapp = False  # This is going to peer, not DPAPP
+            return
+
+        # ========== STANDBY SIDE: Receive FLOW_SYNC_REQ, create flow, send ACK ==========
+        # HLD Step 4-6: Standby receives FLOW_SYNC_REQ, flow miss → DPAPP creates flow
+        # After DPAPP recirculates (packet_source=DPAPP), transform to FLOW_SYNC_ACK
+        if (meta.ha.ha_role == dash_ha_role_t.STANDBY and
+            hdr.packet_meta and
+            hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_REQ):
+            
+            # If flow is already synced (DPAPP already created it), send ACK
+            if meta.flow_sync_state == dash_flow_sync_state_t.FLOW_SYNCED:
+                py_log("info", "HA: Standby DPU transforming FLOW_SYNC_REQ to FLOW_SYNC_ACK")
+                
+                # Build ACK packet
+                conntrack_build_dash_header.apply(
+                    packet_subtype=dash_packet_subtype_t.FLOW_CREATE,
+                    packet_type=dash_packet_type_t.FLOW_SYNC_ACK,
+                    packet_source=dash_packet_source_t.PEER,
+                )
+                hdr.packet_meta.packet_source = dash_packet_source_t.PEER
+                
+                # Route back to active DPU
+                standard_metadata.egress_spec = 1  # HA link port
+                meta.to_dpapp = False
+                return
+            
+            # If flow not created yet, let it go to DPAPP (handled in conntrack_flow_miss_handle)
+            # After DPAPP creates it and recirculates, we'll hit the above condition
+            return
+
+        # ========== ACTIVE SIDE: Receive FLOW_SYNC_ACK, update flow state ==========
+        # HLD Step 7-8: Active receives FLOW_SYNC_ACK, flow is FLOW_CREATED,
+        # trap to DPAPP to update to FLOW_SYNCED
+        if (meta.ha.ha_role == dash_ha_role_t.ACTIVE and
+            hdr.packet_meta and
+            hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_ACK and
+            (meta.flow_sync_state == dash_flow_sync_state_t.FLOW_CREATED or 
+             meta.flow_sync_state == dash_flow_sync_state_t.FLOW_SYNCED)):
+            
+            # After DPAPP updates flow state and recirculates, forward the original packet
+            if hdr.packet_meta.packet_source == dash_packet_source_t.DPAPP:
+                # Flow is now synced, strip dash header and forward original customer packet
+                from py_model.data_plane.stages.conntrack_lookup import conntrack_strip_dash_header
+                conntrack_strip_dash_header()
+                meta.to_dpapp = False
+                # Continue normal pipeline processing
+                return
+            
+            # First time seeing ACK - let it hit flow entry and go to DPAPP
+            # (handled in conntrack_flow_handle)
+            return

@@ -31,6 +31,28 @@ dash_sai_init ()
     dash_log_info("Succeeded to init dash sai api");
 }
 
+static void
+fill_sai_flow_entry_key(sai_flow_entry_t *flow_entry, const flow_key_t *flow_key)
+{
+    flow_entry->switch_id = dash_switch_id;
+    clib_memcpy_fast(flow_entry->eni_mac, flow_key->eni_mac, sizeof(flow_entry->eni_mac));
+    flow_entry->vnet_id = ntohs(flow_key->vnet_id);
+    if (flow_key->is_ip_v6) {
+        flow_entry->src_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV6;
+        clib_memcpy_fast(flow_entry->src_ip.addr.ip6, &flow_key->src_ip.ip6, sizeof(sai_ip6_t));
+        flow_entry->dst_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV6;
+        clib_memcpy_fast(flow_entry->dst_ip.addr.ip6, &flow_key->dst_ip.ip6, sizeof(sai_ip6_t));
+    } else {
+        flow_entry->src_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV4;
+        flow_entry->src_ip.addr.ip4 = flow_key->src_ip.ip4.as_u32;
+        flow_entry->dst_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV4;
+        flow_entry->dst_ip.addr.ip4 = flow_key->dst_ip.ip4.as_u32;
+    }
+    flow_entry->src_port = ntohs(flow_key->src_port);
+    flow_entry->dst_port = ntohs(flow_key->dst_port);
+    flow_entry->ip_proto = flow_key->ip_proto;
+}
+
 sai_status_t
 dash_sai_create_flow_entry (const dash_flow_entry_t *flow)
 {
@@ -47,23 +69,7 @@ dash_sai_create_flow_entry (const dash_flow_entry_t *flow)
      * Fill sai_flow_entry_t, sai_attribute_t, whose values need host order
      * ip4/6 address in network order
      */
-    flow_entry.switch_id = dash_switch_id;
-    clib_memcpy_fast(flow_entry.eni_mac, flow_key->eni_mac, sizeof(flow_entry.eni_mac));
-    flow_entry.vnet_id = ntohs(flow_key->vnet_id);
-    if (flow_key->is_ip_v6) {
-        flow_entry.src_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV6;
-        clib_memcpy_fast(flow_entry.src_ip.addr.ip6, &flow_key->src_ip.ip6, sizeof(sai_ip6_t));
-        flow_entry.dst_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV6;
-        clib_memcpy_fast(flow_entry.dst_ip.addr.ip6, &flow_key->dst_ip.ip6, sizeof(sai_ip6_t));
-    } else {
-        flow_entry.src_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV4;
-        flow_entry.src_ip.addr.ip4 = flow_key->src_ip.ip4.as_u32;
-        flow_entry.dst_ip.addr_family = SAI_IP_ADDR_FAMILY_IPV4;
-        flow_entry.dst_ip.addr.ip4 = flow_key->dst_ip.ip4.as_u32;
-    }
-    flow_entry.src_port = ntohs(flow_key->src_port);
-    flow_entry.dst_port = ntohs(flow_key->dst_port);
-    flow_entry.ip_proto = flow_key->ip_proto;
+    fill_sai_flow_entry_key(&flow_entry, flow_key);
 
     attrs[count].id = SAI_FLOW_ENTRY_ATTR_ACTION;
     attrs[count++].value.u32 = SAI_FLOW_ENTRY_ACTION_SET_FLOW_ENTRY_ATTR;
@@ -84,7 +90,7 @@ dash_sai_create_flow_entry (const dash_flow_entry_t *flow)
     attrs[count++].value.booldata = flow_data->is_unidirectional;
 
     attrs[count].id = SAI_FLOW_ENTRY_ATTR_DASH_FLOW_SYNC_STATE;
-    attrs[count++].value.u8 = SAI_DASH_FLOW_SYNC_STATE_FLOW_CREATED;
+    attrs[count++].value.u8 = flow->sync_state;
 
     /* FIXME: Attrs for reverse flow key */
     {
@@ -243,3 +249,16 @@ dash_sai_remove_flow_entry (const dash_flow_entry_t *flow)
     return dash_flow_api->remove_flow_entry(&flow_entry);
 }
 
+sai_status_t
+dash_sai_update_flow_entry (const dash_flow_entry_t *flow)
+{
+    sai_flow_entry_t flow_entry;
+    sai_attribute_t attr;
+
+    fill_sai_flow_entry_key(&flow_entry, &flow->key);
+
+    attr.id = SAI_FLOW_ENTRY_ATTR_DASH_FLOW_SYNC_STATE;
+    attr.value.u8 = flow->sync_state;
+
+    return dash_flow_api->set_flow_entry_attribute(&flow_entry, &attr);
+}

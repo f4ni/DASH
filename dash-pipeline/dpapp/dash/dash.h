@@ -58,6 +58,7 @@ extern vlib_log_class_registration_t dash_log;
 
 void dash_sai_init ();
 sai_status_t dash_sai_create_flow_entry (const dash_flow_entry_t *flow);
+sai_status_t dash_sai_update_flow_entry (const dash_flow_entry_t *flow);
 sai_status_t dash_sai_remove_flow_entry (const dash_flow_entry_t *flow);
 
 #define DASH_PLUGIN_BUILD_VER "1.0"
