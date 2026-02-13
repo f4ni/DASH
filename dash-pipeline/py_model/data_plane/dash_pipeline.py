@@ -256,7 +256,8 @@ class dash_ingress:
             meta.flow_enabled = True
         else:
             dash_lookup_stage.apply()
-            meta.flow_enabled = True
+            # meta.flow_enabled = True
+            meta.flow_enabled = False
 
         if meta.flow_enabled:
             conntrack_lookup_stage.apply()
@@ -302,7 +303,7 @@ class dash_ingress:
 
         if hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_REQ:
             standard_metadata.egress_spec = 3
-        print(f"\nstandard_metadata.egress_spec: {standard_metadata.egress_spec}\n")
+            print(f"\nstandard_metadata.egress_spec: {standard_metadata.egress_spec}\n")
 
         if meta.eni_data.dscp_mode == dash_tunnel_dscp_mode_t.PIPE_MODEL:
             hdr.u0_ipv4.diffserv = meta.eni_data.dscp

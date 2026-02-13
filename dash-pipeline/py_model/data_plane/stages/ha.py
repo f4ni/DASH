@@ -113,8 +113,7 @@ class ha_stage:
 
         # TODO: HA state machine handling.
 
-        meta.ha.ha_role = 1
-        print(f"\n\n meta.ha.ha_role: {meta.ha.ha_role} \n\n")
+        meta.ha.ha_role = ha_data.ha_role
         # If HA not enabled or role not ACTIVE/STANDBY, nothing to do
         if meta.ha.ha_role not in (dash_ha_role_t.ACTIVE, dash_ha_role_t.STANDBY):
             return
@@ -141,9 +140,6 @@ class ha_stage:
                 packet_type=dash_packet_type_t.FLOW_SYNC_REQ,
                 packet_source=dash_packet_source_t.PEER,  # On wire, it's from PEER
             )
-            
-            # Set packet_source to PEER for routing (HLD requirement)
-            hdr.packet_meta.packet_source = dash_packet_source_t.PEER
             
             # Route to peer DPU via HA data plane channel
             # Set destination to peer IP (from HA set)

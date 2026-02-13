@@ -50,6 +50,31 @@ def conntrack_strip_dash_header():
     hdr.flow_u0_encap_data = None
     hdr.flow_u1_encap_data = None
 
+
+# def dump(name, obj):
+#     print(f"\n{name}:")
+#     for k, v in vars(obj).items():
+#         print(f"  {k} = {v}")
+from enum import Enum, IntEnum
+
+def dump(name, obj):
+    print(f"\n{name}:")
+
+    # Enums (including IntEnum)
+    if isinstance(obj, Enum):
+        print(f"  {obj.__class__.__name__}.{obj.name} = {obj.value}")
+        return
+
+    # Plain ints (or anything without __dict__)
+    if not hasattr(obj, "__dict__"):
+        print(f"  value = {obj}")
+        return
+
+    # Normal Python objects
+    for k, v in vars(obj).items():
+        print(f"  {k} = {v}")
+
+
 class conntrack_build_dash_header:
     @classmethod
     def apply(cls, packet_subtype : dash_packet_subtype_t,
@@ -68,6 +93,9 @@ class conntrack_build_dash_header:
         hdr.flow_data.idle_timeout_in_ms = meta.flow_data.idle_timeout_in_ms
         length += FLOW_DATA_HDR_SIZE
 
+        print(f"\n length: {length} \n")
+        dump("flow_data", hdr.flow_data)
+
         if meta.routing_actions & dash_routing_actions_t.ENCAP_U0 != 0:
             if TARGET == TARGET_DPDK_PNA:
                 hdr.flow_u0_encap_data = encap_data_t()
@@ -80,6 +108,8 @@ class conntrack_build_dash_header:
             else:
                 hdr.flow_u0_encap_data = meta.u0_encap_data
             length += ENCAP_DATA_HDR_SIZE
+        print(f"\n length: {length} \n")
+        dump("flow_u0_encap_data", hdr.flow_u0_encap_data)
 
         if meta.routing_actions & dash_routing_actions_t.ENCAP_U1 != 0:
             if TARGET == TARGET_DPDK_PNA:
@@ -93,6 +123,8 @@ class conntrack_build_dash_header:
             else:
                 hdr.flow_u1_encap_data = meta.u1_encap_data
             length += ENCAP_DATA_HDR_SIZE
+        print(f"\n length: {length} \n")
+        dump("flow_u1_encap_data", hdr.flow_u1_encap_data)
 
         if meta.routing_actions != 0:
             if TARGET == TARGET_DPDK_PNA:
@@ -106,9 +138,12 @@ class conntrack_build_dash_header:
             else:
                 hdr.flow_overlay_data = meta.overlay_data
             length += OVERLAY_REWRITE_DATA_HDR_SIZE
+        print(f"\n length: {length} \n")
+        dump("flow_overlay_data", hdr.flow_overlay_data)
 
         length += FLOW_KEY_HDR_SIZE
-            
+        print(f"\n length: {length} \n")
+
         hdr.packet_meta = dash_packet_meta_t()
         # hdr.packet_meta.packet_source = dash_packet_source_t.PIPELINE
         # hdr.packet_meta.packet_type = dash_packet_type_t.REGULAR
@@ -116,11 +151,14 @@ class conntrack_build_dash_header:
         hdr.packet_meta.packet_type = packet_type
         hdr.packet_meta.packet_subtype = packet_subtype
         hdr.packet_meta.length = length + PACKET_META_HDR_SIZE
+        print(f"\n hdr.packet_meta.length: {hdr.packet_meta.length} \n")
+        dump("packet_meta", hdr.packet_meta)
 
         hdr.dp_ethernet = ethernet_t()
         hdr.dp_ethernet.dst_addr = meta.cpu_mac
         hdr.dp_ethernet.src_addr = meta.u0_encap_data.underlay_smac
         hdr.dp_ethernet.ether_type = DASH_ETHTYPE
+        dump("dp_ethernet", hdr.dp_ethernet)
 
 class conntrack_flow_miss_handle():
     @classmethod
@@ -130,15 +168,23 @@ class conntrack_flow_miss_handle():
         # Handle FLOW_SYNC_REQ packets from peer (standby side)
         if (hdr.packet_meta and 
             hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_REQ):
+            print("\nThis is a sync request from peer - trap to DPAPP\n")
             # This is a sync request from peer - trap to DPAPP
             # DPAPP will create the flow in FLOW_SYNCED state
+
             conntrack_set_meta_from_dash_header()  # Extract flow data from dash header
+
+            conntrack_build_dash_header.apply(dash_packet_subtype_t.FLOW_CREATE,
+                                              dash_packet_type_t.FLOW_SYNC_REQ,
+                                              dash_packet_source_t.PEER)
+
             meta.to_dpapp = True
             return
         
         # Handle FLOW_SYNC_ACK packets from peer (active side)
         if (hdr.packet_meta and 
             hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_ACK):
+            print("\nThis is a sync ack from peer - need to update existing flow\n")
             # This is a sync ack from peer - need to update existing flow
             # The flow should already exist in FLOW_CREATED state
             # We'll let it hit the flow table and then trap to DPAPP for update
@@ -179,24 +225,13 @@ class conntrack_flow_handle():
     @classmethod
     def apply(cls):
         print("\nconntrack_flow_handle\n")
+        py_log("info", "conntrack_flow_handle")
 
         match meta.flow_sync_state:
             case dash_flow_sync_state_t.FLOW_MISS:
                 conntrack_flow_miss_handle.apply()
-            case dash_flow_sync_state_t.FLOW_SYNCED:
-                return
-            case dash_flow_sync_state_t.FLOW_CREATED:
-                # Check if this is a FLOW_SYNC_ACK that needs to update flow state
-                if (hdr.packet_meta and 
-                    hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_ACK):
-                    # Trap to DPAPP to update flow from FLOW_CREATED to FLOW_SYNCED
-                    print("\nTrap to DPAPP to update flow from FLOW_CREATED to FLOW_SYNCED\n")
-                    conntrack_set_meta_from_dash_header()
-                    meta.to_dpapp = True
-                    return
-                
-                conntrack_flow_created_handle.apply()
-
+            # case dash_flow_sync_state_t.FLOW_SYNCED:
+            #     return
             case dash_flow_sync_state_t.FLOW_SYNCED:
                 # If we are Standby and receive a SYNC_REQ for an existing SYNCED flow,
                 # we must preserve the header so HA stage can simply ACK it.
@@ -209,12 +244,23 @@ class conntrack_flow_handle():
                 else:
                     # Normal synced flow behavior
                     pass
-
+            case dash_flow_sync_state_t.FLOW_CREATED:
+                # Check if this is a FLOW_SYNC_ACK that needs to update flow state
+                if (hdr.packet_meta and 
+                    hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_ACK):
+                    # Trap to DPAPP to update flow from FLOW_CREATED to FLOW_SYNCED
+                    print("\nTrap to DPAPP to update flow from FLOW_CREATED to FLOW_SYNCED\n")
+                    conntrack_set_meta_from_dash_header()
+                    meta.to_dpapp = True
+                    return
+                
+                conntrack_flow_created_handle.apply()
         # Drop dash header if not sending to dpapp AND not a special HA packet we need to preserve
         if not meta.to_dpapp:
             # Preserve header if it is a FLOW_SYNC_REQ (Standby needs to ACK it)
             if (hdr.packet_meta and 
                 hdr.packet_meta.packet_type == dash_packet_type_t.FLOW_SYNC_REQ):
+                print("\nPreserve header if it is a FLOW_SYNC_REQ (Standby needs to ACK it)\n")
                 pass
             else:
                 conntrack_strip_dash_header()

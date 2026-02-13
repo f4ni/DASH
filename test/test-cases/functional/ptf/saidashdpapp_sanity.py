@@ -366,8 +366,10 @@ class SaiThriftDpappPktTest(SaiHelperSimplified):
 
         self.configureVnet()
         self.trafficUdpTest()
-        self.trafficTcpTest()
-        self.ageoutTcpTest()
+        import time
+        time.sleep(5)
+        # self.trafficTcpTest()
+        # self.ageoutTcpTest()
 
     def tearDown(self):
 

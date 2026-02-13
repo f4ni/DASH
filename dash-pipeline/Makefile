@@ -411,7 +411,7 @@ run-dpapp: $(DPAPP_LINK)
 	$(DOCKER_RUN_DPAPP) \
 	--privileged \
 	-u root \
-	--name dash-dpapp-$(USER) \
+	--name $(or $(CONTAINER_NAME),dash-dpapp-$(USER)) \
 	-w /dash/dash-pipeline/dpapp $(DOCKER_DPAPP_IMG) \
 	env HOST_INTERFACE=$(DPAPP_LINK_PEER) ./dpapp.sh startup.conf
 

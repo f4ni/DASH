@@ -1,15 +1,12 @@
+#!/bin/bash
+set -euo pipefail
+
 ## run active instance:
 # sudo make run-pymodel HAVE_DPAPP=y PY_ARGS='--port 9559 --role active'
 
 ## run standby instance:
 # sudo make run-pymodel HAVE_DPAPP=y IFACE0=veth7 IFACE1=veth8 DPAPP_LINK=veth10 DPAPP_LINK_PEER=veth11 CONTAINER_NAME=dash-pymodel-standby PY_ARGS='--port 9560 --role standby'
 
-
-
-
-
-#!/bin/bash
-set -euo pipefail
 
 usage() {
     cat <<EOF
@@ -25,7 +22,7 @@ Commands:
 
   # Builds
   bmv2-build          Build BMv2 DASH environment
-  pymodel-build       Build Python model DASH environment
+  py-build       Build Python model DASH environment
 
   # Cleans
   py-clean            Clean Python artifacts
@@ -36,7 +33,9 @@ Commands:
 Examples:
   $0 pymodel
   $0 bmv2-build
+  $0 py-build
   $0 sai-clean
+  $0 sai-server-clean
 EOF
     exit 1
 }
@@ -75,14 +74,15 @@ case "$1" in
     py-build)
         clear
         echo "Building Python model DASH..."
-        chown -R "${USER}:${USER}" .
-        make py-artifacts docker-saithrift-bldr
-        make docker-pymodel-bldr
-        make sai TARGET=pymodel
-        make docker-dash-dpapp dpapp TARGET=pymodel
-        # make check-sai-spec
-        make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
-        make docker-saithrift-client
+        # sudo chown -R "${USER}:${USER}" .
+        make py-artifacts
+        sudo make docker-saithrift-bldr
+        sudo make docker-pymodel-bldr
+        sudo make sai TARGET=pymodel
+        sudo make docker-dash-dpapp dpapp TARGET=pymodel
+        # sudo make check-sai-spec
+        sudo make saithrift-server HOST_USER=$(id -u) HOST_GROUP=$(id -g)
+        sudo make docker-saithrift-client
         ;;
 
     pymodel)
@@ -95,7 +95,7 @@ case "$1" in
     py-dpapp)
         clear
         echo "Running DPAPP for pymodel..."
-        make run-dpapp TARGET=pymodel
+        make run-dpapp TARGET=pymodel DPAPP_LINK_PEER=veth5
         ;;
 
     py-saiserver)

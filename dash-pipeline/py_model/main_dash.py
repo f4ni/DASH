@@ -4,7 +4,7 @@ import threading
 from scapy.all import sniff, sendp, Ether
 from py_model.dash_py_v1model import dash_py_model
 from py_model.control_plane.grpc_server import serve
-from py_model.libs.__utils import py_log, standard_metadata
+from py_model.libs.__utils import py_log, standard_metadata, ha_data
 
 iface_list = []
 
@@ -76,9 +76,8 @@ def main() -> None:
             i += 1
             
     if ha_role:
-        import os
-        os.environ["DASH_HA_ROLE"] = ha_role
-        py_log(None, f"HA Role set to: {ha_role} (Env: DASH_HA_ROLE)")
+        ha_data.ha_role = int(ha_role)
+        py_log(None, f"HA Role set to: {ha_role} [1: Active, 2: Standby]")
 
     setup_interfaces(args)
 

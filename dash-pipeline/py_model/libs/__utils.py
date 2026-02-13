@@ -26,6 +26,7 @@ meta = metadata_t()
 standard_metadata = standard_metadata_t()
 pkt_in = packet_in()
 pkt_out = packet_out()
+ha_data = ha_data_t()
 
 
 def deny():
